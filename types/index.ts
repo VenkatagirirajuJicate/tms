@@ -12,7 +12,7 @@ export interface User {
 }
 
 export interface Route {
-  id: string
+  id: number
   routeNumber: string
   routeName: string
   startLocation: string
@@ -20,21 +20,19 @@ export interface Route {
   departureTime: string
   arrivalTime: string
   totalStops: number
-  seatCapacity: number
-  standingCapacity: number
   currentPassengers: number
-  vehicleRegNo: string
-  fuelLevel: string
-  status: 'active' | 'inactive'
+  totalCapacity: number
+  status: 'active' | 'inactive' | 'maintenance'
   driver: string
+  vehicleRegNo: string
+  distance: number
+  duration: string
+  stops: Stop[]
 }
 
 export interface Stop {
-  id: string
   name: string
-  timing: string
-  passengerCount: number
-  routeId: string
+  time: string
 }
 
 export interface Schedule {

@@ -2,135 +2,187 @@
 
 import React, { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { ChevronLeft } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ChevronLeft, Map, List, User, BarChart2, Clock, MapPin, Users, Navigation, Bus } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import { allRoutes } from '@/data/dummy-data';
 
-const routeDetails = [
-  { label: 'Route Number', value: '15' },
-  { label: 'Route Name', value: 'Thiruvagowndanoor Bypass' },
-  { label: 'Main Driver', value: 'Velan K', hasLink: true },
-  { label: 'Departure Time', value: '07.10 AM' },
-  { label: 'ETA', value: '08.45 AM' },
-  { label: 'Boarding Point Count', value: '13' },
-  { label: 'Seat Capacity', value: '50' },
-  { label: 'Standing Capacity', value: '20' },
-  { label: 'Passenger Boarding', value: '66' },
-  { label: 'Vehicle Reg No', value: 'TN12AB6789' },
-  { label: 'Fuel', value: '60 / 80 litre' },
-];
+const MapComponent = dynamic(() => import('../../live-tracking/map-component'), { ssr: false });
 
-const tabs = [
-  { name: 'Stoppings', screen: 'stoppings' },
-  { name: 'Passengers', screen: 'passengers' },
-  { name: 'Track', screen: 'track' },
-];
-
-const RouteDetails = () => {
+const RouteDetailPage = () => {
   const router = useRouter();
   const params = useParams();
   const routeNumber = params.routeNumber as string;
-  const [activeTab, setActiveTab] = useState('stoppings');
 
-  const handleTabClick = (tabScreen: string) => {
-    setActiveTab(tabScreen);
-    if (tabScreen === 'track') {
-      router.push('/live-tracking');
+  const route = allRoutes.find(r => r.routeNumber === routeNumber);
+
+  const [activeTab, setActiveTab] = useState('stops');
+
+  if (!route) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-50 text-center">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800">Route not found</h2>
+          <p className="text-gray-600 mt-2">The route you are looking for does not exist.</p>
+          <button onClick={() => router.back()} className="btn-primary mt-6">Go Back</button>
+        </div>
+      </div>
+    );
+  }
+
+  const mapSteps = route.stops.map((stop, index) => ({
+    name: stop.name,
+    time: stop.time,
+    position: [11.34 + index * 0.05, 77.71 + index * 0.05] as [number, number],
+    isDestination: index === route.stops.length - 1,
+  }));
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'stops':
+        return <StopsList stops={route.stops} />;
+      case 'driver':
+        return <DriverVehicleInfo driver={route.driver} vehicle={route.vehicleRegNo} />;
+      case 'analytics':
+        return <RouteAnalytics />;
+      default:
+        return null;
     }
   };
 
   return (
-    <div className="flex-1 bg-[#1E1E1E] min-h-screen">
-      {/* Header */}
-      <div className="flex items-center p-5">
-        <button
-          onClick={() => router.back()}
-          className="mr-4 text-white hover:text-[#FCD34D] transition-colors"
-        >
-          <ChevronLeft size={24} />
-        </button>
-        <h1 className="text-2xl font-bold text-white">Route {routeNumber}</h1>
-      </div>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
+          <div className="flex items-center gap-4 mb-6">
+            <button onClick={() => router.back()} className="p-2 rounded-full hover:bg-gray-100">
+              <ChevronLeft size={24} className="text-gray-600" />
+            </button>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">{`Route ${route.routeNumber}: ${route.routeName}`}</h1>
+              <p className="text-gray-600">{route.startLocation} to {route.endLocation}</p>
+            </div>
+          </div>
 
-      {/* Tabs */}
-      <div className="flex justify-around px-4 mb-5">
-        {tabs.map((tab) => (
-          <button
-            key={tab.name}
-            onClick={() => handleTabClick(tab.screen)}
-            className={`px-4 py-2 rounded-full min-w-[100px] text-center border transition-colors ${
-              activeTab === tab.screen
-                ? 'bg-[#4a90e2] text-white border-[#4a90e2]'
-                : 'bg-[#2C2C2C] text-white border-[#666] hover:bg-[#353A40]'
-            }`}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 text-center">
+            <InfoBox icon={Clock} label="Duration" value={route.duration} />
+            <InfoBox icon={MapPin} label="Stops" value={`${route.totalStops}`} />
+            <InfoBox icon={Navigation} label="Distance" value={`${route.distance} km`} />
+            <InfoBox icon={Users} label="Capacity" value={`${route.currentPassengers} / ${route.totalCapacity}`} />
+          </div>
+        </motion.div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Left Column: Map */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 }}
+            className="h-[400px] lg:h-full rounded-2xl overflow-hidden shadow-lg border border-gray-200"
           >
-            {tab.name}
-          </button>
-        ))}
-      </div>
+            <MapComponent steps={mapSteps} currentStepIndex={mapSteps.length} />
+          </motion.div>
 
-      {/* Content */}
-      <div className="flex-1 px-4 pb-5">
-        {activeTab === 'stoppings' && (
-          <div>
-            <h2 className="text-white text-lg font-semibold mb-4">ROUTE DETAILS</h2>
-            <div className="bg-[#2C2C2C] rounded-lg overflow-hidden">
-              {routeDetails.map((detail, index) => (
-                <div
-                  key={index}
-                  className={`flex justify-between items-center py-3 px-4 ${
-                    index !== routeDetails.length - 1 ? 'border-b border-[#666]' : ''
-                  }`}
-                >
-                  <span className="text-[#888] text-sm font-semibold flex-1">
-                    {detail.label}
-                  </span>
-                  <div className="flex items-center justify-end">
-                    <span className="text-white text-sm text-right">
-                      {detail.value}
-                    </span>
-                    {detail.hasLink && (
-                      <button className="text-[#3498db] ml-2 text-sm hover:underline">
-                        View Profile
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
+          {/* Right Column: Tabs and Dynamic Content */}
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
+            <div className="card">
+              <div className="border-b border-gray-200">
+                <nav className="-mb-px flex space-x-6" aria-label="Tabs">
+                  <TabButton name="stops" icon={List} activeTab={activeTab} setActiveTab={setActiveTab} />
+                  <TabButton name="driver" icon={User} activeTab={activeTab} setActiveTab={setActiveTab} />
+                  <TabButton name="analytics" icon={BarChart2} activeTab={activeTab} setActiveTab={setActiveTab} />
+                </nav>
+              </div>
+              <div className="pt-6">
+                {renderContent()}
+              </div>
             </div>
-          </div>
-        )}
-
-        {activeTab === 'passengers' && (
-          <div>
-            <h2 className="text-white text-lg font-semibold mb-4">PASSENGERS</h2>
-            <div className="bg-[#2C2C2C] rounded-lg p-4">
-              <p className="text-[#888] text-center">Passenger list will be displayed here</p>
-              <button
-                onClick={() => router.push('/route-passengers')}
-                className="mt-4 w-full bg-[#4a90e2] text-white py-2 rounded-lg hover:bg-[#357abd] transition-colors"
-              >
-                View All Passengers
-              </button>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'track' && (
-          <div>
-            <h2 className="text-white text-lg font-semibold mb-4">TRACKING</h2>
-            <div className="bg-[#2C2C2C] rounded-lg p-4">
-              <p className="text-[#888] text-center">Live tracking will be displayed here</p>
-              <button
-                onClick={() => router.push('/live-tracking')}
-                className="mt-4 w-full bg-[#4a90e2] text-white py-2 rounded-lg hover:bg-[#357abd] transition-colors"
-              >
-                Open Live Tracking
-              </button>
-            </div>
-          </div>
-        )}
+          </motion.div>
+        </div>
       </div>
     </div>
   );
 };
 
-export default RouteDetails; 
+const InfoBox = ({ icon: Icon, label, value }) => (
+  <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+    <Icon className="w-6 h-6 text-blue-600 mx-auto mb-2" />
+    <p className="text-sm text-gray-500">{label}</p>
+    <p className="font-bold text-gray-900 text-lg">{value}</p>
+  </div>
+);
+
+const TabButton = ({ name, icon: Icon, activeTab, setActiveTab }) => (
+  <button
+    onClick={() => setActiveTab(name)}
+    className={`flex items-center gap-2 whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm capitalize transition-colors ${
+      activeTab === name
+        ? 'border-blue-600 text-blue-700'
+        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+    }`}
+  >
+    <Icon className={`w-4 h-4 ${activeTab === name ? 'text-blue-600' : 'text-gray-400'}`} />
+    {name}
+  </button>
+);
+
+const StopsList = ({ stops }) => (
+  <div>
+    <h3 className="text-lg font-semibold text-gray-900 mb-4">Route Stops</h3>
+    <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+      {stops.map((stop, index) => (
+        <div key={index} className="flex items-center">
+          <div className="flex flex-col items-center mr-4">
+            <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center ring-4 ring-blue-100">
+              <MapPin className="text-white w-3 h-3" />
+            </div>
+            {index < stops.length - 1 && <div className="w-0.5 h-12 bg-blue-200" />}
+          </div>
+          <div>
+            <p className="font-semibold text-gray-800">{stop.name}</p>
+            <p className="text-sm text-gray-500">Scheduled: {stop.time} AM</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const DriverVehicleInfo = ({ driver, vehicle }) => (
+  <div>
+    <h3 className="text-lg font-semibold text-gray-900 mb-4">Driver & Vehicle</h3>
+    <div className="space-y-4">
+      <div className="flex items-center gap-4 bg-gray-50 p-4 rounded-lg">
+        <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center"><User className="w-6 h-6 text-blue-600" /></div>
+        <div>
+          <p className="text-sm text-gray-500">Driver</p>
+          <p className="font-bold text-gray-900">{driver}</p>
+        </div>
+      </div>
+      <div className="flex items-center gap-4 bg-gray-50 p-4 rounded-lg">
+        <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center"><Bus className="w-6 h-6 text-blue-600" /></div>
+        <div>
+          <p className="text-sm text-gray-500">Vehicle Reg. No.</p>
+          <p className="font-bold text-gray-900">{vehicle}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const RouteAnalytics = () => (
+  <div>
+    <h3 className="text-lg font-semibold text-gray-900 mb-4">Analytics</h3>
+    <div className="space-y-4">
+      <p className="text-gray-600">Analytics and performance data for this route will be displayed here.</p>
+      {/* Placeholder for charts or stats */}
+      <div className="bg-gray-50 p-6 rounded-lg text-center">
+        <BarChart2 className="w-12 h-12 text-gray-400 mx-auto mb-2"/>
+        <p className="text-sm text-gray-500">Analytics data coming soon.</p>
+      </div>
+    </div>
+  </div>
+);
+
+export default RouteDetailPage; 

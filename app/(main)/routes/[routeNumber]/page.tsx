@@ -6,8 +6,10 @@ import { motion } from 'framer-motion';
 import { ChevronLeft, Map, List, User, BarChart2, Clock, MapPin, Users, Navigation, Bus } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { allRoutes } from '@/data/dummy-data';
+import { Stop } from '@/types';
+import RouteAnalytics from '@/components/route-analytics';
 
-const MapComponent = dynamic(() => import('../../live-tracking/map-component'), { ssr: false });
+const MapComponent = dynamic(() => import('@/app/(main)/live-tracking/map-component'), { ssr: false });
 
 const RouteDetailPage = () => {
   const router = useRouter();
@@ -30,13 +32,6 @@ const RouteDetailPage = () => {
     );
   }
 
-  const mapSteps = route.stops.map((stop, index) => ({
-    name: stop.name,
-    time: stop.time,
-    position: [11.34 + index * 0.05, 77.71 + index * 0.05] as [number, number],
-    isDestination: index === route.stops.length - 1,
-  }));
-
   const renderContent = () => {
     switch (activeTab) {
       case 'stops':
@@ -44,7 +39,7 @@ const RouteDetailPage = () => {
       case 'driver':
         return <DriverVehicleInfo driver={route.driver} vehicle={route.vehicleRegNo} />;
       case 'analytics':
-        return <RouteAnalytics />;
+        return <RouteAnalytics routeNumber={routeNumber} />;
       default:
         return null;
     }
@@ -81,7 +76,7 @@ const RouteDetailPage = () => {
             transition={{ delay: 0.1 }}
             className="h-[400px] lg:h-full rounded-2xl overflow-hidden shadow-lg border border-gray-200"
           >
-            <MapComponent steps={mapSteps} currentStepIndex={mapSteps.length} />
+            <MapComponent routeNumber={routeNumber} currentStepIndex={-1} />
           </motion.div>
 
           {/* Right Column: Tabs and Dynamic Content */}
@@ -105,7 +100,7 @@ const RouteDetailPage = () => {
   );
 };
 
-const InfoBox = ({ icon: Icon, label, value }) => (
+const InfoBox = ({ icon: Icon, label, value }: { icon: React.ElementType, label: string, value: string }) => (
   <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
     <Icon className="w-6 h-6 text-blue-600 mx-auto mb-2" />
     <p className="text-sm text-gray-500">{label}</p>
@@ -113,7 +108,7 @@ const InfoBox = ({ icon: Icon, label, value }) => (
   </div>
 );
 
-const TabButton = ({ name, icon: Icon, activeTab, setActiveTab }) => (
+const TabButton = ({ name, icon: Icon, activeTab, setActiveTab }: { name: string, icon: React.ElementType, activeTab: string, setActiveTab: (name: string) => void }) => (
   <button
     onClick={() => setActiveTab(name)}
     className={`flex items-center gap-2 whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm capitalize transition-colors ${
@@ -127,7 +122,7 @@ const TabButton = ({ name, icon: Icon, activeTab, setActiveTab }) => (
   </button>
 );
 
-const StopsList = ({ stops }) => (
+const StopsList = ({ stops }: { stops: Stop[] }) => (
   <div>
     <h3 className="text-lg font-semibold text-gray-900 mb-4">Route Stops</h3>
     <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
@@ -149,7 +144,7 @@ const StopsList = ({ stops }) => (
   </div>
 );
 
-const DriverVehicleInfo = ({ driver, vehicle }) => (
+const DriverVehicleInfo = ({ driver, vehicle }: { driver: string, vehicle: string }) => (
   <div>
     <h3 className="text-lg font-semibold text-gray-900 mb-4">Driver & Vehicle</h3>
     <div className="space-y-4">
@@ -171,18 +166,6 @@ const DriverVehicleInfo = ({ driver, vehicle }) => (
   </div>
 );
 
-const RouteAnalytics = () => (
-  <div>
-    <h3 className="text-lg font-semibold text-gray-900 mb-4">Analytics</h3>
-    <div className="space-y-4">
-      <p className="text-gray-600">Analytics and performance data for this route will be displayed here.</p>
-      {/* Placeholder for charts or stats */}
-      <div className="bg-gray-50 p-6 rounded-lg text-center">
-        <BarChart2 className="w-12 h-12 text-gray-400 mx-auto mb-2"/>
-        <p className="text-sm text-gray-500">Analytics data coming soon.</p>
-      </div>
-    </div>
-  </div>
-);
+
 
 export default RouteDetailPage; 

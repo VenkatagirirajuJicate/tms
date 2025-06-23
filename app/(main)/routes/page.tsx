@@ -3,7 +3,8 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Bus, MapPin, Clock, Users, Search, Plus, SlidersHorizontal, ChevronRight } from 'lucide-react';
+import { Bus, MapPin, Clock, Users, Search, SlidersHorizontal, ChevronRight } from 'lucide-react';
+import AdvancedRouteFilters from '@/components/advanced-route-filters';
 
 const dummyRoutes = [
   {
@@ -163,7 +164,7 @@ const RouteCard = ({ route }: { route: typeof dummyRoutes[0] }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="card-hover bg-white rounded-2xl shadow-sm border border-gray-200 p-5 flex flex-col justify-between cursor-pointer group"
+      className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-pointer group flex flex-col justify-between"
       onClick={() => router.push(`/routes/${route.routeNumber}`)}
     >
       <div>
@@ -171,7 +172,7 @@ const RouteCard = ({ route }: { route: typeof dummyRoutes[0] }) => {
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center font-bold text-xl group-hover:bg-blue-600 group-hover:text-white transition-colors">
               {route.routeNumber}
-          </div>
+            </div>
           <div>
               <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
                 {route.routeName}
@@ -197,7 +198,7 @@ const RouteCard = ({ route }: { route: typeof dummyRoutes[0] }) => {
             <span className="text-xs font-semibold text-gray-800">{route.currentPassengers} / {route.totalCapacity}</span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2">
-            <div className={`h-2 rounded-full ${getOccupancyColor()}`} style={{ width: `${occupancyRate}%` }} />
+            <div className={`h-2 rounded-full transition-all duration-300 ${getOccupancyColor()}`} style={{ width: `${occupancyRate}%` }} />
           </div>
         </div>
       </div>
@@ -221,6 +222,20 @@ const RouteCard = ({ route }: { route: typeof dummyRoutes[0] }) => {
 const RoutesPage = () => {
   const [activeTab, setActiveTab] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
+  const [filters, setFilters] = useState({
+    status: [],
+    occupancyRange: [0, 100] as [number, number],
+    distanceRange: [0, 100] as [number, number],
+    departureTimeRange: ['06:00', '09:00'] as [string, string],
+    driver: [],
+    vehicleType: [],
+    routeType: [],
+    showInactive: false,
+  });
+
+  // Get unique drivers for filter options
+  const availableDrivers = Array.from(new Set(dummyRoutes.map(route => route.driver)));
+  const availableVehicleTypes = ['Standard Bus', 'Mini Bus', 'Luxury Coach', 'Electric Bus'];
 
   const tabs = ['All', 'Active', 'Inactive'];
 
@@ -233,6 +248,7 @@ const RoutesPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <div className="lg:hidden h-16" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
@@ -248,13 +264,12 @@ const RoutesPage = () => {
                   className="input-field pl-10 w-full sm:w-64"
                 />
               </div>
-              <button className="btn-secondary p-2.5">
-                <SlidersHorizontal className="w-5 h-5" />
-              </button>
-              <button className="btn-primary flex items-center gap-2">
-                <Plus className="w-5 h-5" />
-                <span>Add New</span>
-            </button>
+              <AdvancedRouteFilters
+                filters={filters}
+                onFiltersChange={setFilters}
+                availableDrivers={availableDrivers}
+                availableVehicleTypes={availableVehicleTypes}
+              />
             </div>
           </div>
           

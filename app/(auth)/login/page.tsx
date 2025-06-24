@@ -183,7 +183,7 @@ const LoginScreen = () => {
 
           {/* Sign Up Link */}
           <div className="text-center pt-4 border-t border-gray-200">
-            <span className="text-gray-600">Don't have an account? </span>
+            <span className="text-gray-600">Don&apos;t have an account? </span>
             <button
               onClick={() => router.push('/new-user-form')}
               className="text-blue-600 hover:text-blue-700 font-semibold transition-colors"

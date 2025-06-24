@@ -110,7 +110,7 @@ const HomeScreen = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 leading-tight">
             Welcome back, {userType.charAt(0).toUpperCase() + userType.slice(1)}!
           </h1>
-          <p className="text-gray-600 text-sm sm:text-base">Here's your transportation summary for today.</p>
+          <p className="text-gray-600 text-sm sm:text-base">Here&apos;s your transportation summary for today.</p>
         </motion.div>
 
         {/* Enhanced Next Trip Card - Minimal Theme */}
@@ -303,7 +303,7 @@ const HomeScreen = () => {
           <motion.div {...fadeIn(0.4)} className="space-y-8">
             {/* Stats */}
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Today's Info</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Today&apos;s Info</h2>
               <div className="card p-4">
                 <div className="space-y-3">
                   {stats.map((stat) => (

@@ -904,7 +904,7 @@ Contact: support@traventtms.com
               </div>
               
               <p className="text-gray-600 mb-6">
-                Are you sure you want to sign out? You'll need to log in again to access your account.
+                Are you sure you want to sign out? You&apos;ll need to log in again to access your account.
               </p>
               
               <div className="flex space-x-3">

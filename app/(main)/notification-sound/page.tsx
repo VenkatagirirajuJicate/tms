@@ -689,7 +689,7 @@ const NotificationSound: React.FC = () => {
               <div className="flex items-center space-x-2">
                 <VolumeX className="w-4 h-4 text-yellow-600" />
                 <p className="text-sm text-yellow-800">
-                  Notifications are muted. You won't hear any sounds.
+                  Notifications are muted. You won&apos;t hear any sounds.
                 </p>
               </div>
             </div>

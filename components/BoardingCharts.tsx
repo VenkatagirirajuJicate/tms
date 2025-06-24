@@ -78,7 +78,7 @@ const BoardingCharts: React.FC<BoardingChartsProps> = ({
         <div className="card">
           <div className="card-header">
             <h3 className="text-lg font-semibold text-gray-900">Student Attendance</h3>
-            <p className="text-sm text-gray-600">Today's boarding status</p>
+            <p className="text-sm text-gray-600">Today&apos;s boarding status</p>
           </div>
           <div className="card-content">
             <div className="flex items-center justify-between mb-4">
@@ -132,7 +132,7 @@ const BoardingCharts: React.FC<BoardingChartsProps> = ({
         <div className="card">
           <div className="card-header">
             <h3 className="text-lg font-semibold text-gray-900">Staff Attendance</h3>
-            <p className="text-sm text-gray-600">Today's boarding status</p>
+            <p className="text-sm text-gray-600">Today&apos;s boarding status</p>
           </div>
           <div className="card-content">
             <div className="flex items-center justify-between mb-4">

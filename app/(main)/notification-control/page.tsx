@@ -388,7 +388,7 @@ const NotificationControl: React.FC = () => {
                   <div className="flex items-center space-x-2">
                     <BellOff className="w-4 h-4 text-yellow-500" />
                     <p className="text-sm text-yellow-200">
-                      Notifications are disabled. You'll miss important updates.
+                      Notifications are disabled. You&apos;ll miss important updates.
                     </p>
                   </div>
                   <button

@@ -1218,8 +1218,8 @@ Remember to confirm your trip between
             <span className="font-medium text-yellow-800">Important Reminder</span>
           </div>
           <p className="text-sm text-yellow-700">
-                         Your digital boarding pass will be available in the "E-Boarding Pass" tab after 7:00 PM for tomorrow's trip. 
-             Don't forget to confirm your trip between 4-7 PM the day before departure.
+                         Your digital boarding pass will be available in the &quot;E-Boarding Pass&quot; tab after 7:00 PM for tomorrow&apos;s trip. 
+             Don&apos;t forget to confirm your trip between 4-7 PM the day before departure.
           </p>
         </div>
     </div>
@@ -1900,7 +1900,7 @@ const BoardingPassDashboard: React.FC<{
           <QrCode className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-gray-800 mb-4">No Boarding Pass Available</h2>
           <p className="text-gray-600 mb-6">
-            You don't have any confirmed trips for tomorrow
+            You don&apos;t have any confirmed trips for tomorrow
           </p>
           <button
             onClick={() => {}}

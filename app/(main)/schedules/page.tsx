@@ -1,34 +1,36 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Calendar, 
-  Clock, 
-  MapPin, 
-  Users, 
-  Bus, 
-  Plus,
-  Ticket,
+import { useRouter } from 'next/navigation';
+import toast, { Toaster } from 'react-hot-toast';
+import html2canvas from 'html2canvas';
+import * as domtoimage from 'dom-to-image-more';
+import {
+  Bus,
+  MapPin,
+  Clock,
+  Users,
+  Calendar,
   CreditCard,
   CheckCircle,
-  XCircle,
-  AlertCircle,
+  X,
+  ArrowLeft,
   Download,
   QrCode,
+  AlertTriangle,
+  Timer,
+  Eye,
+  Info,
+  AlertCircle,
+  ChevronLeft,
+  Plus,
+  Ban,
+  Bell,
   Star,
   ArrowRight,
   Home,
-  School,
-  Info,
-  Bell,
-  Shield,
-  DollarSign,
-  Timer,
-  Ban,
-  Eye,
-  FileText
+  XCircle
 } from 'lucide-react';
 import { allRoutes } from '@/data/dummy-data';
 
@@ -115,6 +117,213 @@ const studentAllocation = {
   totalFines: 50
 };
 
+// Advanced PNG Download with CSS inlining for perfect style capture
+const downloadBoardingPassAsPNG = async (elementId: string, filename: string) => {
+  try {
+    const element = document.getElementById(elementId);
+    if (!element) {
+      console.error('Element not found:', elementId);
+      toast.error(`Boarding pass element not found: ${elementId}`);
+      return;
+    }
+
+    // Check if element is visible
+    const rect = element.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) {
+      console.error('Element is not visible:', elementId, rect);
+      toast.error('Boarding pass is not visible. Please try again.');
+      return;
+    }
+
+    console.log('Capturing element:', elementId, 'Size:', rect.width, 'x', rect.height);
+
+    // Show loading toast
+    const loadingToast = toast.loading('Generating boarding pass image...');
+
+    // Wait for content to fully render
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Ensure element is fully visible by scrolling to it
+    element.scrollIntoView({ behavior: 'instant', block: 'center' });
+    
+    // Wait after scrolling
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+    // Initialize blob variable
+    let blob: Blob;
+
+    // Try dom-to-image-more first to avoid border box issues
+    try {
+      console.log('Using dom-to-image-more for clean rendering...');
+      
+      // Create a temporary style element to override problematic styles during capture
+      const tempStyle = document.createElement('style');
+      tempStyle.id = 'temp-boarding-pass-style';
+      tempStyle.textContent = `
+        #${elementId} *, #${elementId} *::before, #${elementId} *::after {
+          border: none !important;
+          outline: none !important;
+          box-shadow: none !important;
+        }
+        #${elementId} .border-2 {
+          border: 2px solid !important;
+        }
+        #${elementId} .border-blue-500 {
+          border-color: rgb(59, 130, 246) !important;
+        }
+        #${elementId} .border-gray-300 {
+          border-color: rgb(209, 213, 219) !important;
+        }
+        #${elementId} .border-gray-200 {
+          border-color: rgb(229, 231, 235) !important;
+        }
+        #${elementId} .border-dashed {
+          border-style: dashed !important;
+        }
+        #${elementId} .border-t-2 {
+          border-top: 2px solid !important;
+        }
+        #${elementId} .rounded-xl {
+          border-radius: 0.75rem !important;
+        }
+        #${elementId} .rounded-lg {
+          border-radius: 0.5rem !important;
+        }
+        #${elementId} .rounded-2xl {
+          border-radius: 1rem !important;
+        }
+      `;
+      document.head.appendChild(tempStyle);
+      
+      // Wait for style to be applied
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      const dataUrl = await domtoimage.toPng(element, {
+        quality: 0.95,
+        bgcolor: '#ffffff',
+        width: Math.max(element.scrollWidth, element.offsetWidth, rect.width),
+        height: Math.max(element.scrollHeight, element.offsetHeight, rect.height),
+        style: {
+          transform: 'scale(1)',
+          transformOrigin: 'top left',
+          fontFamily: 'system-ui, -apple-system, sans-serif',
+        },
+        filter: (node: Node) => {
+          const htmlElement = node as HTMLElement;
+          if (htmlElement.tagName === 'SCRIPT' || htmlElement.tagName === 'STYLE') {
+            return false;
+          }
+          return true;
+        },
+        cacheBust: true,
+      });
+
+      // Remove temporary style
+      document.head.removeChild(tempStyle);
+
+      console.log('dom-to-image generated, data URL length:', dataUrl.length);
+
+      if (!dataUrl || dataUrl.length < 1000) {
+        throw new Error('Generated image appears to be empty or corrupt');
+      }
+
+      const response = await fetch(dataUrl);
+      blob = await response.blob();
+
+    } catch (domToImageError) {
+      console.log('dom-to-image-more failed, falling back to HTML2Canvas:', domToImageError);
+      
+      // Clean up temporary style if it exists
+      const existingTempStyle = document.getElementById('temp-boarding-pass-style');
+      if (existingTempStyle) {
+        document.head.removeChild(existingTempStyle);
+      }
+      
+      // Fallback to HTML2Canvas with minimal style interference
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        logging: false,
+        useCORS: true,
+        allowTaint: true,
+        imageTimeout: 15000,
+        width: Math.max(element.scrollWidth, element.offsetWidth, rect.width),
+        height: Math.max(element.scrollHeight, element.offsetHeight, rect.height),
+        // Minimal onclone to avoid style conflicts
+        onclone: (clonedDoc) => {
+          // Add a simple style to remove unwanted borders
+          const style = clonedDoc.createElement('style');
+          style.textContent = `
+            * { border: none !important; outline: none !important; }
+            .border-2 { border: 2px solid !important; }
+            .border-dashed { border-style: dashed !important; }
+            .border-blue-500 { border-color: rgb(59, 130, 246) !important; }
+            .border-gray-300 { border-color: rgb(209, 213, 219) !important; }
+            .border-gray-200 { border-color: rgb(229, 231, 235) !important; }
+          `;
+          clonedDoc.head.appendChild(style);
+        }
+      });
+
+      // Convert canvas to blob
+      blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((blobResult) => {
+          if (blobResult) {
+            resolve(blobResult);
+          } else {
+            reject(new Error('Failed to create blob from canvas'));
+          }
+        }, 'image/png', 0.95);
+      });
+
+      console.log('Canvas generated, blob size:', blob.size, 'bytes');
+    }
+
+    if (blob.size < 1000) {
+      throw new Error('Generated image file is too small, likely empty');
+    }
+
+    console.log('Final blob size:', blob.size, 'bytes');
+
+    // Create download link
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.style.display = 'none';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    URL.revokeObjectURL(url);
+    toast.dismiss(loadingToast);
+    toast.success('Boarding pass downloaded successfully!');
+
+  } catch (error) {
+    console.error('Error generating boarding pass:', error);
+    toast.dismiss();
+    
+    // Clean up temporary style if it exists
+    const existingTempStyle = document.getElementById('temp-boarding-pass-style');
+    if (existingTempStyle) {
+      document.head.removeChild(existingTempStyle);
+    }
+    
+    // Provide helpful error message
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    if (errorMessage.includes('oklch')) {
+      toast.error('Color compatibility issue. Please try refreshing the page.');
+    } else if (errorMessage.includes('network')) {
+      toast.error('Network error. Please check your connection and try again.');
+    } else if (errorMessage.includes('empty') || errorMessage.includes('corrupt')) {
+      toast.error('Failed to capture boarding pass content. Please try again.');
+    } else {
+      toast.error('Download failed. Please try again in a moment.');
+    }
+  }
+};
+
 const SchedulesPage = () => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'book' | 'my-bookings' | 'boarding-pass'>('book');
@@ -165,6 +374,16 @@ const SchedulesPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 overflow-x-hidden">
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+        }}
+      />
       <div className="lg:hidden h-16" />
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
         {/* Header */}
@@ -191,7 +410,7 @@ const SchedulesPage = () => {
               color="blue"
             />
             <StatCard
-              icon={<Ticket className="w-5 h-5" />}
+              icon={<QrCode className="w-5 h-5" />}
               label="My Bookings"
               value={studentAllocation.currentBookings.length.toString()}
               color="green"
@@ -209,7 +428,7 @@ const SchedulesPage = () => {
               color="green"
             />
             <StatCard
-              icon={<DollarSign className="w-5 h-5" />}
+              icon={<CreditCard className="w-5 h-5" />}
               label="Outstanding Fines"
               value={`₹${studentAllocation.outstandingFines}`}
               color={studentAllocation.outstandingFines > 0 ? "red" : "green"}
@@ -234,7 +453,7 @@ const SchedulesPage = () => {
                     <span className="break-words">Cancel before 7 PM the day before</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                    <CreditCard className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
                     <span className="break-words">₹50 fine for no-show without cancellation</span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -269,7 +488,7 @@ const SchedulesPage = () => {
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
-                <Ticket className="w-3 h-3 sm:w-4 sm:h-4" />
+                <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="hidden sm:inline">My Bookings</span>
                 <span className="sm:hidden">Bookings</span>
               </button>
@@ -1015,7 +1234,7 @@ const MyBookings: React.FC<{ bookings: any[] }> = ({ bookings }) => {
       ))}
       {bookings.length === 0 && (
         <div className="text-center py-12">
-          <Ticket className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <QrCode className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">No bookings found</h3>
           <p className="text-gray-500">Schedule your first trip to get started!</p>
         </div>
@@ -1041,8 +1260,8 @@ const BookingCard: React.FC<{ booking: any }> = ({ booking }) => {
         return { color: 'bg-blue-100 text-blue-800', icon: CheckCircle, label: 'Trip Completed' };
       case 'no-show':
         return { color: 'bg-red-100 text-red-800', icon: AlertCircle, label: 'No Show' };
-      case 'fined':
-        return { color: 'bg-red-100 text-red-800', icon: DollarSign, label: 'Fined' };
+          case 'fined':
+      return { color: 'bg-red-100 text-red-800', icon: CreditCard, label: 'Fined' };
       default:
         return { color: 'bg-gray-100 text-gray-800', icon: AlertCircle, label: status };
     }
@@ -1120,7 +1339,7 @@ const BookingCard: React.FC<{ booking: any }> = ({ booking }) => {
         {booking.fine && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
             <div className="flex items-center gap-2">
-              <DollarSign className="w-4 h-4 text-red-600" />
+                              <CreditCard className="w-4 h-4 text-red-600" />
               <span className="text-sm font-medium text-red-800">
                 Fine Applied: ₹{booking.fine} (No-show without cancellation)
               </span>
@@ -1273,8 +1492,8 @@ const BookingCard: React.FC<{ booking: any }> = ({ booking }) => {
   );
 };
 
-// Barcode Component for Pass Verification
-const Barcode: React.FC<{ passId: string }> = ({ passId }) => {
+// Barcode Component for Pass Verification - Improved Responsive Version
+const Barcode: React.FC<{ passId: string; isCompact?: boolean }> = ({ passId, isCompact = false }) => {
   // Generate barcode-like pattern based on pass ID
   const generateBarcodePattern = (text: string) => {
     const patterns = [];
@@ -1289,19 +1508,24 @@ const Barcode: React.FC<{ passId: string }> = ({ passId }) => {
   };
 
   const barcodePattern = generateBarcodePattern(passId);
+  const maxBars = isCompact ? 30 : 35;
+  const barWidth = isCompact ? 2 : 3;
+  const baseHeight = isCompact ? 30 : 40;
 
   return (
-    <div className="flex items-end gap-[1px] bg-white p-4 rounded-lg shadow-sm border-2 border-gray-200">
-      {barcodePattern.slice(0, 40).map((width, index) => (
-        <div
-          key={index}
-          className="bg-black"
-          style={{
-            width: `${Math.max(4, width * 2.5)}px`,
-            height: `${40 + (width * 12)}px`
-          }}
-        />
-      ))}
+    <div className={`flex items-end justify-center gap-[1px] bg-white rounded-lg shadow-sm border-2 border-gray-200 ${isCompact ? 'p-2' : 'p-4'} w-full max-w-full overflow-hidden`}>
+      <div className="flex items-end gap-[1px] max-w-full">
+        {barcodePattern.slice(0, maxBars).map((width, index) => (
+          <div
+            key={index}
+            className="bg-black flex-shrink-0"
+            style={{
+              width: `${Math.max(2, width * barWidth)}px`,
+              height: `${baseHeight + (width * (isCompact ? 8 : 12))}px`
+            }}
+          />
+        ))}
+      </div>
     </div>
   );
 };
@@ -1313,6 +1537,14 @@ const AirlineBoardingPass: React.FC<{
 }> = ({ booking, onClose }) => {
   const passId = booking.qrCode || booking.id;
   const currentDate = new Date().toLocaleDateString('en-GB');
+  
+  const handleDownloadPNG = () => {
+    const filename = `boarding-pass-${passId}-${currentDate.replace(/\//g, '-')}.png`;
+    // Use different IDs for desktop and mobile to avoid conflicts
+    const isMobile = window.innerWidth < 768;
+    const elementId = isMobile ? 'boarding-pass-mobile' : 'boarding-pass-desktop';
+    downloadBoardingPassAsPNG(elementId, filename);
+  };
   
   return (
     <div className="flex flex-col h-full">
@@ -1328,163 +1560,158 @@ const AirlineBoardingPass: React.FC<{
       </div>
 
       {/* Boarding Pass Content */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-auto min-h-0">
         {/* Desktop Layout */}
-        <div className="hidden md:flex justify-center p-6">
-          <div className="w-full max-w-4xl bg-white border-2 border-blue-500 rounded-2xl overflow-hidden shadow-2xl">
-            {/* Header Section */}
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-6">
+        <div className="hidden md:flex flex-col items-center p-2 md:p-3 space-y-4">
+          <div id="boarding-pass-desktop" className="w-full max-w-4xl bg-white border-2 border-blue-500 rounded-2xl overflow-hidden shadow-2xl mx-2">
+            {/* Header Section - Ultra compact */}
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-2">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <Bus className="w-8 h-8" />
+                <div className="flex items-center gap-2">
+                  <Bus className="w-5 h-5" />
                   <div>
-                    <h1 className="text-2xl font-bold tracking-wider">BOARDING PASS</h1>
-                    <p className="text-blue-100">TRAVENT TRANSPORTATION MANAGEMENT SYSTEM</p>
+                    <h1 className="text-sm md:text-base font-bold tracking-wider">BOARDING PASS</h1>
+                    <p className="text-blue-100 text-xs">TRAVENT TRANSPORTATION MANAGEMENT SYSTEM</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-blue-100 text-sm">ELECTRONIC TICKET</div>
-                  <div className="font-mono text-lg">{booking.id}</div>
+                  <div className="text-blue-100 text-xs">ELECTRONIC TICKET</div>
+                  <div className="font-mono text-xs">BK001</div>
                 </div>
               </div>
             </div>
 
-            <div className="flex">
-              {/* Left Stub */}
-              <div className="flex-shrink-0 w-48 bg-gray-50 p-6 border-r-2 border-dashed border-gray-300">
-                <div className="space-y-6">
+            <div className="flex flex-col md:flex-row">
+              {/* Left Stub - Ultra compact */}
+              <div className="flex-shrink-0 md:w-36 bg-gray-50 p-2 md:border-r-2 border-dashed border-gray-300">
+                <div className="space-y-2">
                   <div>
-                    <div className="text-xs font-semibold text-gray-500 mb-1">PASSENGER</div>
-                    <div className="font-bold text-sm text-gray-900">{booking.passengerName || 'JOHN DOE'}</div>
+                    <div className="text-xs font-semibold text-gray-500">PASSENGER</div>
+                    <div className="font-bold text-sm text-gray-900">John Doe</div>
                   </div>
                   
                   <div>
-                    <div className="text-xs font-semibold text-gray-500 mb-1">FROM</div>
-                    <div className="font-semibold text-xs text-gray-900">{booking.boardingStop?.substring(0, 15)}</div>
+                    <div className="text-xs font-semibold text-gray-500">FROM</div>
+                    <div className="font-semibold text-xs text-gray-900">Erode Bus Stand</div>
                   </div>
 
                   <div>
-                    <div className="text-xs font-semibold text-gray-500 mb-1">TO</div>
-                    <div className="font-semibold text-xs text-gray-900">{(booking.routeDetails?.to || 'JKKN Campus').substring(0, 15)}</div>
+                    <div className="text-xs font-semibold text-gray-500">TO</div>
+                    <div className="font-semibold text-xs text-gray-900">JKKN Campus</div>
                   </div>
 
                   <div>
-                    <div className="text-xs font-semibold text-gray-500 mb-1">SEAT</div>
-                    <div className="font-bold text-xl text-blue-600">{booking.seatNumber}</div>
+                    <div className="text-xs font-semibold text-gray-500">SEAT</div>
+                    <div className="font-bold text-base text-blue-600">A12</div>
                   </div>
 
                   <div>
-                    <div className="text-xs font-semibold text-gray-500 mb-1">DEPARTURE</div>
-                    <div className="font-bold text-lg text-gray-900">{booking.departureTime}</div>
-                  </div>
-
-                  {/* Vertical Barcode */}
-                  <div className="pt-4">
-                    <div className="transform -rotate-90 origin-center scale-75">
-                      <Barcode passId={passId} />
-                    </div>
+                    <div className="text-xs font-semibold text-gray-500">DEPARTURE</div>
+                    <div className="font-bold text-sm text-gray-900">07:00 AM</div>
                   </div>
                 </div>
               </div>
 
-              {/* Main Section */}
-              <div className="flex-1 p-8">
-                {/* Passenger & Trip Info */}
-                <div className="grid grid-cols-4 gap-6 mb-8">
+              {/* Main Section - Ultra compact */}
+              <div className="flex-1 p-2">
+                {/* Passenger & Trip Info - Ultra compact */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-2">
                   <div>
-                    <div className="text-xs font-semibold text-gray-500 mb-1">PASSENGER NAME</div>
-                    <div className="font-bold text-lg text-gray-900">{booking.passengerName || 'JOHN DOE'}</div>
-                    <div className="text-sm text-gray-600">{booking.studentId || 'STU001'}</div>
+                    <div className="text-xs font-semibold text-gray-500">PASSENGER NAME</div>
+                    <div className="font-bold text-sm text-gray-900">John Doe</div>
+                    <div className="text-xs text-gray-600">STU001</div>
                   </div>
 
                   <div>
-                    <div className="text-xs font-semibold text-gray-500 mb-1">ROUTE</div>
-                    <div className="font-bold text-lg text-gray-900">{booking.routeNumber || booking.routeName?.split(' ')[1] || 'R01'}</div>
-                    <div className="text-sm text-gray-600">{booking.routeName}</div>
+                    <div className="text-xs font-semibold text-gray-500">ROUTE</div>
+                    <div className="font-bold text-sm text-gray-900">01</div>
+                    <div className="text-xs text-gray-600">Erode Central</div>
                   </div>
 
                   <div>
-                    <div className="text-xs font-semibold text-gray-500 mb-1">DATE</div>
-                    <div className="font-bold text-lg text-gray-900">{new Date(booking.date).toLocaleDateString('en-GB')}</div>
+                    <div className="text-xs font-semibold text-gray-500">DATE</div>
+                    <div className="font-bold text-sm text-gray-900">25/06/2025</div>
                   </div>
 
                   <div>
-                    <div className="text-xs font-semibold text-gray-500 mb-1">SEAT</div>
-                    <div className="font-bold text-2xl text-blue-600">{booking.seatNumber}</div>
+                    <div className="text-xs font-semibold text-gray-500">SEAT</div>
+                    <div className="font-bold text-sm text-blue-600">A12</div>
                   </div>
                 </div>
 
-                {/* Route Visualization */}
-                <div className="flex items-center justify-center mb-8">
+                {/* Route Visualization - Ultra compact */}
+                <div className="flex items-center justify-center mb-2">
                   <div className="text-center">
-                    <div className="text-xs font-semibold text-gray-500 mb-2">DEPARTURE</div>
-                    <div className="font-bold text-3xl text-gray-900">
-                      {booking.boardingStop?.split(' ')[0]?.toUpperCase() || 'BOARDING'}
-                    </div>
-                    <div className="text-sm text-gray-600 mt-1">{booking.boardingStop}</div>
-                    <div className="font-bold text-xl text-blue-600 mt-2">{booking.departureTime}</div>
+                    <div className="text-xs font-semibold text-gray-500">DEPARTURE</div>
+                    <div className="font-bold text-base text-gray-900">ERODE</div>
+                    <div className="text-xs text-gray-600">Erode Bus Stand</div>
+                    <div className="font-bold text-sm text-blue-600">07:00 AM</div>
                   </div>
                   
-                  <div className="mx-12 flex items-center">
-                    <div className="w-16 h-px bg-gray-400"></div>
-                    <Bus className="w-8 h-8 text-blue-500 mx-4" />
-                    <div className="w-16 h-px bg-gray-400"></div>
+                  <div className="mx-3 flex items-center">
+                    <div className="w-4 h-px bg-gray-400"></div>
+                    <Bus className="w-4 h-4 text-blue-500 mx-1" />
+                    <div className="w-4 h-px bg-gray-400"></div>
                   </div>
                   
                   <div className="text-center">
-                    <div className="text-xs font-semibold text-gray-500 mb-2">ARRIVAL</div>
-                    <div className="font-bold text-3xl text-gray-900">
-                      {booking.routeDetails?.to?.split(' ')[0]?.toUpperCase() || 'CAMPUS'}
-                    </div>
-                    <div className="text-sm text-gray-600 mt-1">{booking.routeDetails?.to || 'JKKN Campus'}</div>
-                    <div className="font-bold text-xl text-gray-600 mt-2">
-                      {/* Calculate arrival time (assuming 30 min journey) */}
-                      {(() => {
-                        const [hours, minutes] = booking.departureTime.split(':').map(Number);
-                        const totalMinutes = hours * 60 + minutes + 30;
-                        const arrivalHours = Math.floor(totalMinutes / 60) % 24;
-                        const arrivalMinutes = totalMinutes % 60;
-                        return `${arrivalHours.toString().padStart(2, '0')}:${arrivalMinutes.toString().padStart(2, '0')}`;
-                      })()}
-                    </div>
+                    <div className="text-xs font-semibold text-gray-500">ARRIVAL</div>
+                    <div className="font-bold text-base text-gray-900">JKKN</div>
+                    <div className="text-xs text-gray-600">JKKN Campus</div>
+                    <div className="font-bold text-sm text-gray-600">09:00 AM</div>
                   </div>
                 </div>
 
-                {/* Large Barcode Section */}
-                <div className="text-center bg-gray-50 rounded-xl p-8 border-2 border-dashed border-gray-300">
-                  <div className="text-lg font-bold text-gray-800 mb-6 tracking-wider">SCAN TO BOARD BUS</div>
-                  <div className="flex justify-center mb-6 p-4 bg-white rounded-lg shadow-sm border border-gray-200">
-                    <div className="transform scale-150">
-                      <Barcode passId={passId} />
-                    </div>
+                {/* Ultra Compact Barcode Section */}
+                <div className="text-center bg-gray-50 rounded-lg p-1.5 border-2 border-dashed border-gray-300">
+                  <div className="text-xs font-semibold text-gray-800 mb-1.5 tracking-wider">SCAN TO BOARD BUS</div>
+                  <div className="w-full max-w-64 mx-auto mb-1.5">
+                    <Barcode passId={passId} isCompact={true} />
                   </div>
-                  <div className="font-mono text-base text-gray-700 break-all tracking-wider bg-white p-3 rounded border border-gray-200 mb-2">
-                    {passId}
+                  <div className="font-mono text-xs text-gray-700 break-all tracking-wider bg-white p-1 rounded border border-gray-200 mb-1 max-w-36 mx-auto">
+                    BK-8K0UZ
                   </div>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-xs text-gray-500">
                     Present this barcode to the driver for verification
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Footer */}
-            <div className="bg-gray-100 px-8 py-4 border-t border-gray-200">
-              <div className="flex justify-between items-center text-sm text-gray-600">
-                <div>Status: <span className="font-semibold text-green-600">{booking.status.toUpperCase()}</span></div>
-                <div>Gate: <span className="font-semibold">G{booking.seatNumber?.charAt(0) || 'A'}</span></div>
+            {/* Ultra Compact Footer */}
+            <div className="bg-gray-100 px-3 py-1.5 border-t border-gray-200">
+              <div className="flex flex-wrap justify-between items-center text-xs text-gray-600 gap-1">
+                <div>Status: <span className="font-semibold text-green-600">CONFIRMED</span></div>
+                <div>Gate: <span className="font-semibold">GA</span></div>
                 <div>Generated: {currentDate}</div>
                 <div className="font-semibold">Valid for single journey only</div>
               </div>
             </div>
+                      </div>
+            
+            {/* Desktop Action Buttons */}
+            <div className="flex justify-center gap-4 w-full max-w-4xl">
+              <button
+                onClick={handleDownloadPNG}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
+              >
+                <Download className="w-5 h-5" />
+                Download PNG
+              </button>
+              <button
+                onClick={onClose}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-8 py-3 rounded-lg font-medium transition-colors"
+              >
+                Close
+              </button>
+            </div>
           </div>
-        </div>
 
         {/* Mobile Layout - Completely Redesigned */}
         <div className="md:hidden h-full flex flex-col min-h-0">
           <div className="flex-1 p-2 overflow-auto">
             {/* Mobile Airline Ticket Style */}
-            <div className="bg-white border-2 border-blue-500 rounded-xl overflow-hidden shadow-lg mb-2">
+            <div id="boarding-pass-mobile" className="bg-white border-2 border-blue-500 rounded-xl overflow-hidden shadow-lg mb-2">
               {/* Blue Header */}
               <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-3">
                 <div className="flex items-center justify-between">
@@ -1508,13 +1735,13 @@ const AirlineBoardingPass: React.FC<{
                 <div className="grid grid-cols-2 gap-2">
                   <div className="bg-blue-50 rounded-lg p-3 text-center">
                     <div className="text-xs font-semibold text-blue-600 mb-1">PASSENGER</div>
-                    <div className="font-bold text-sm text-gray-900">{booking.passengerName || 'JOHN DOE'}</div>
-                    <div className="text-xs text-gray-600">{booking.studentId || 'STU001'}</div>
+                    <div className="font-bold text-sm text-gray-900">John Doe</div>
+                    <div className="text-xs text-gray-600">STU001</div>
                   </div>
                   <div className="bg-green-50 rounded-lg p-3 text-center">
                     <div className="text-xs font-semibold text-green-600 mb-1">SEAT NO.</div>
-                    <div className="font-bold text-2xl text-green-600">{booking.seatNumber}</div>
-                    <div className="text-xs text-green-600">Gate G{booking.seatNumber?.charAt(0) || 'A'}</div>
+                    <div className="font-bold text-2xl text-green-600">A12</div>
+                    <div className="text-xs text-green-600">Gate GA</div>
                   </div>
                 </div>
 
@@ -1523,11 +1750,9 @@ const AirlineBoardingPass: React.FC<{
                   <div className="flex items-center justify-between">
                     <div className="text-center flex-1">
                       <div className="text-xs font-semibold text-gray-500">FROM</div>
-                      <div className="font-bold text-lg text-gray-900">
-                        {booking.boardingStop?.split(' ')[0]?.substring(0, 6)?.toUpperCase() || 'BRD'}
-                      </div>
-                      <div className="text-xs text-gray-600 truncate">{booking.boardingStop?.substring(0, 12)}</div>
-                      <div className="font-bold text-blue-600 mt-1">{booking.departureTime}</div>
+                      <div className="font-bold text-lg text-gray-900">ERODE</div>
+                      <div className="text-xs text-gray-600 truncate">Erode Bus Stand</div>
+                      <div className="font-bold text-blue-600 mt-1">07:00 AM</div>
                     </div>
                     
                     <div className="mx-3 flex flex-col items-center">
@@ -1541,19 +1766,9 @@ const AirlineBoardingPass: React.FC<{
                     
                     <div className="text-center flex-1">
                       <div className="text-xs font-semibold text-gray-500">TO</div>
-                      <div className="font-bold text-lg text-gray-900">
-                        {booking.routeDetails?.to?.split(' ')[0]?.substring(0, 6)?.toUpperCase() || 'CAMPUS'}
-                      </div>
-                      <div className="text-xs text-gray-600 truncate">{booking.routeDetails?.to?.substring(0, 12) || 'JKKN Campus'}</div>
-                      <div className="font-bold text-gray-600 mt-1">
-                        {(() => {
-                          const [hours, minutes] = booking.departureTime.split(':').map(Number);
-                          const totalMinutes = hours * 60 + minutes + 30;
-                          const arrivalHours = Math.floor(totalMinutes / 60) % 24;
-                          const arrivalMinutes = totalMinutes % 60;
-                          return `${arrivalHours.toString().padStart(2, '0')}:${arrivalMinutes.toString().padStart(2, '0')}`;
-                        })()}
-                      </div>
+                      <div className="font-bold text-lg text-gray-900">JKKN</div>
+                      <div className="text-xs text-gray-600 truncate">JKKN Campus</div>
+                      <div className="font-bold text-gray-600 mt-1">09:00 AM</div>
                     </div>
                   </div>
                 </div>
@@ -1572,16 +1787,14 @@ const AirlineBoardingPass: React.FC<{
               </div>
 
               {/* Large Barcode Section - Bottom */}
-              <div className="border-t-2 border-dashed border-gray-300 p-6 bg-gray-50">
+              <div className="border-t-2 border-dashed border-gray-300 p-4 bg-gray-50">
                 <div className="text-center">
-                  <div className="text-lg font-bold text-gray-800 mb-4 tracking-wide">SCAN TO BOARD BUS</div>
-                  <div className="flex justify-center mb-4 p-2 bg-white rounded-lg border border-gray-300">
-                    <div className="transform scale-150">
-                      <Barcode passId={passId} />
-                    </div>
+                  <div className="text-base font-bold text-gray-800 mb-4 tracking-wide">SCAN TO BOARD BUS</div>
+                  <div className="w-full max-w-xs mx-auto mb-4">
+                    <Barcode passId={passId} isCompact={true} />
                   </div>
-                  <div className="font-mono text-sm text-gray-600 break-all px-2 bg-white rounded p-2 border border-gray-200">
-                    {passId}
+                  <div className="font-mono text-xs text-gray-600 break-all px-2 bg-white rounded p-2 border border-gray-200 max-w-48 mx-auto">
+                    BK-8K0UZ
                   </div>
                   <div className="text-xs text-gray-500 mt-2">
                     Show this barcode to the driver when boarding
@@ -1602,42 +1815,7 @@ const AirlineBoardingPass: React.FC<{
           <div className="flex-shrink-0 p-2 bg-white border-t border-gray-200">
             <div className="flex gap-2">
               <button
-                onClick={() => {
-                  const boardingPassData = `
-TRAVENT TMS - E-BOARDING PASS
-=============================
-Passenger: ${booking.passengerName || 'JOHN DOE'}
-Student ID: ${booking.studentId || 'STU001'}
-Route: ${booking.routeName} (${booking.routeNumber || booking.routeName?.split(' ')[1] || 'R01'})
-Date: ${new Date(booking.date).toLocaleDateString('en-GB')}
-From: ${booking.boardingStop}
-To: ${booking.routeDetails?.to || 'JKKN Campus'}
-Departure Time: ${booking.departureTime}
-Seat Number: ${booking.seatNumber}
-Gate: G${booking.seatNumber?.charAt(0) || 'A'}
-
-Pass ID: ${passId}
-Status: ${booking.status.toUpperCase()}
-Generated: ${currentDate}
-
-BOARDING INSTRUCTIONS:
-- Arrive at boarding point 10 minutes before departure
-- Show this pass to the driver/conductor for verification
-- Carry valid student ID card for additional verification
-- This pass is valid for single journey only
-- Contact support for any issues: support@traventtms.com
-
-Powered by Travent Transportation Management System
-                  `;
-                  
-                  const element = document.createElement('a');
-                  const file = new Blob([boardingPassData], { type: 'text/plain' });
-                  element.href = URL.createObjectURL(file);
-                  element.download = `e-boarding-pass-${booking.id}.txt`;
-                  document.body.appendChild(element);
-                  element.click();
-                  document.body.removeChild(element);
-                }}
+                onClick={handleDownloadPNG}
                 className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 text-sm"
               >
                 <Download className="w-4 h-4" />
@@ -1654,19 +1832,19 @@ Powered by Travent Transportation Management System
         </div>
       </div>
 
-      {/* Important Notice - Desktop Only */}
-      <div className="hidden md:block p-6 pt-0">
-        <div className="max-w-4xl mx-auto p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <div className="flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+      {/* Important Notice - Desktop Only - Ultra compact */}
+      <div className="hidden md:block p-1 md:p-2">
+        <div className="max-w-4xl mx-auto p-2 bg-yellow-50 border border-yellow-200 rounded-lg mx-2">
+          <div className="flex items-start gap-2">
+            <AlertCircle className="w-3 h-3 text-yellow-600 mt-0.5 flex-shrink-0" />
             <div>
-              <h4 className="font-semibold text-yellow-800 mb-2">Important Boarding Instructions</h4>
-              <ul className="text-sm text-yellow-700 space-y-1">
+              <h4 className="font-semibold text-yellow-800 mb-1 text-xs">Important Boarding Instructions</h4>
+              <ul className="text-xs text-yellow-700 space-y-0.5">
                 <li>• Present this boarding pass to the driver when boarding the bus</li>
-                <li>• Arrive at your designated boarding stop 10 minutes before departure time</li>
+                <li>• Arrive at boarding stop 10 minutes before departure time (07:00 AM)</li>
                 <li>• Keep your student ID card ready for verification if requested</li>
-                <li>• This e-boarding pass is valid for single journey only</li>
-                <li>• For support or issues, contact: support@traventtms.com or call 1800-XXX-XXXX</li>
+                <li>• This e-boarding pass is valid for single journey only - Route 01 (Erode to JKKN)</li>
+                <li>• For support: support@traventtms.com or call 1800-XXX-XXXX</li>
               </ul>
             </div>
           </div>
@@ -1683,6 +1861,12 @@ const BoardingPassDashboard: React.FC<{
   studentInfo: any;
 }> = ({ isBoardingWindowOpen, nextTrip, studentInfo }) => {
   const [showFullTicket, setShowFullTicket] = useState(false);
+  
+  const handleDownloadDashboardPNG = () => {
+    const currentDate = new Date().toLocaleDateString('en-GB');
+    const filename = `boarding-pass-dashboard-${nextTrip.id}-${currentDate.replace(/\//g, '-')}.png`;
+    downloadBoardingPassAsPNG('boarding-pass-dashboard', filename);
+  };
 
   // If boarding window is not open (before 7 PM)
   if (!isBoardingWindowOpen) {
@@ -1761,6 +1945,7 @@ const BoardingPassDashboard: React.FC<{
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
+        id="boarding-pass-dashboard"
         className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden"
       >
         {/* Header with Bus Logo */}
@@ -1889,39 +2074,7 @@ const BoardingPassDashboard: React.FC<{
                 Full Ticket View
               </button>
               <button
-                onClick={() => {
-                  // Download functionality
-                  const ticketData = `
-TRAVENT TMS - E-BOARDING PASS
-=============================
-Passenger: ${nextTrip.passengerName}
-Student ID: ${nextTrip.studentId}
-Date: ${new Date(nextTrip.date).toLocaleDateString('en-GB')}
-Route: ${nextTrip.routeName}
-From: ${nextTrip.routeDetails.from}
-To: ${nextTrip.routeDetails.to}
-Departure: ${nextTrip.departureTime}
-Seat: ${nextTrip.seatNumber}
-QR Code: ${nextTrip.qrCode}
-
-Instructions:
-- Arrive 10 minutes before departure
-- Show this pass to the driver
-- Keep your student ID ready
-- Follow safety guidelines
-
-Valid for single journey only.
-Generated on: ${new Date().toLocaleString()}
-                  `;
-                  
-                  const element = document.createElement('a');
-                  const file = new Blob([ticketData], { type: 'text/plain' });
-                  element.href = URL.createObjectURL(file);
-                  element.download = `boarding-pass-${nextTrip.id}.txt`;
-                  document.body.appendChild(element);
-                  element.click();
-                  document.body.removeChild(element);
-                }}
+                onClick={handleDownloadDashboardPNG}
                 className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
               >
                 <Download className="w-4 h-4" />

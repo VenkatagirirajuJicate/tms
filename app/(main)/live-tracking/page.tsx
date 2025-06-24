@@ -163,7 +163,7 @@ const LiveTrackingScreen: React.FC<LiveTrackingScreenProps> = ({ routeNumber: in
   return (
     <div className="h-screen flex flex-col bg-gray-100">
       <div className="lg:hidden h-16 flex-shrink-0" />
-      <header className="flex items-center justify-between p-3 bg-white shadow-sm border-b border-gray-200 z-[1020] flex-shrink-0">
+      <header className="flex items-center justify-between p-3 bg-white shadow-sm border-b border-gray-200 z-[100] flex-shrink-0">
         <div className="flex items-center">
           <button onClick={() => router.back()} className="mr-2 p-2 rounded-full hover:bg-gray-100">
             <ChevronLeft size={24} className="text-gray-700" />
@@ -180,13 +180,13 @@ const LiveTrackingScreen: React.FC<LiveTrackingScreenProps> = ({ routeNumber: in
       <main className="flex-1 relative overflow-hidden">
         <MapComponent key={routeNumber} routeNumber={routeNumber} currentStepIndex={currentStepIndex} autoPan={autoPan} />
         
-        <div className="absolute top-4 left-4 z-[1000]">
+        <div className="absolute top-4 left-4 z-[90]">
           <div className="w-16 h-16 bg-yellow-400 rounded-full flex items-center justify-center border-2 border-black shadow-lg">
             <span className="text-black text-2xl font-bold">{routeNumber}</span>
           </div>
         </div>
 
-        <div className="absolute top-4 right-4 flex items-start gap-3 z-[1000]">
+        <div className="absolute top-4 right-4 flex items-start gap-3 z-[90]">
           <div className="flex flex-col gap-3 items-center">
             <button 
               onClick={() => setAutoPan(v => !v)} 

@@ -84,7 +84,7 @@ const Navbar = () => {
   return (
     <>
       {/* Desktop Navigation */}
-      <aside className="hidden lg:flex fixed left-0 top-0 h-full w-64 flex-col bg-white shadow-lg border-r border-gray-100 z-50">
+      <aside className="hidden lg:flex fixed left-0 top-0 h-full w-64 flex-col bg-white shadow-lg border-r border-gray-100 z-[9999]">
         {/* Logo */}
         <div className="flex items-center space-x-3 p-6 border-b border-gray-100">
           <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-md">
@@ -140,7 +140,7 @@ const Navbar = () => {
       </aside>
 
       {/* Mobile Navigation */}
-      <header className="lg:hidden fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-sm shadow-sm border-b border-gray-100 z-40">
+      <header className="lg:hidden fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-sm shadow-sm border-b border-gray-100 z-[9998]">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-md">
@@ -171,7 +171,7 @@ const Navbar = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black bg-opacity-50 z-50 lg:hidden"
+            className="fixed inset-0 bg-black bg-opacity-50 z-[9999] lg:hidden"
             onClick={() => setIsMobileMenuOpen(false)}
           >
             <motion.div

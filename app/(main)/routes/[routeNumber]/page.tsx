@@ -47,6 +47,7 @@ const RouteDetailPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <div className="lg:hidden h-16" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
@@ -165,7 +166,5 @@ const DriverVehicleInfo = ({ driver, vehicle }: { driver: string, vehicle: strin
     </div>
   </div>
 );
-
-
 
 export default RouteDetailPage; 

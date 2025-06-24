@@ -530,35 +530,35 @@ const PaymentOverview: React.FC<{
     {data.outstandingPayments.length > 0 && (
       <div>
         <h3 className="text-xl font-semibold text-gray-900 mb-4">Outstanding Payments</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {data.outstandingPayments.map((payment: any) => (
-            <div key={payment.id} className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+            <div key={payment.id} className="bg-white rounded-xl p-4 sm:p-6 border border-gray-200 shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-4 gap-3">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
                     payment.type === 'fine' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'
                   }`}>
                     {payment.type === 'fine' ? <AlertTriangle className="w-5 h-5" /> : <Receipt className="w-5 h-5" />}
                   </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900">{payment.title}</h4>
-                    <p className="text-sm text-gray-600">{payment.description}</p>
+                  <div className="min-w-0 flex-1">
+                    <h4 className="font-semibold text-gray-900 truncate">{payment.title}</h4>
+                    <p className="text-sm text-gray-600 line-clamp-2">{payment.description}</p>
                   </div>
                 </div>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                <span className={`px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
                   payment.priority === 'high' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
                 }`}>
                   {payment.priority} priority
                 </span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                  <p className="text-2xl font-bold text-gray-900">₹{payment.amount}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900">₹{payment.amount}</p>
                   <p className="text-sm text-gray-500">Due: {new Date(payment.dueDate).toLocaleDateString('en-GB')}</p>
                 </div>
                 <button
                   onClick={() => onPayNow(payment)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
                     payment.priority === 'high' 
                       ? 'bg-red-600 text-white hover:bg-red-700' 
                       : 'bg-blue-600 text-white hover:bg-blue-700'
@@ -577,16 +577,16 @@ const PaymentOverview: React.FC<{
     {data.upcomingPayments.length > 0 && (
       <div>
         <h3 className="text-xl font-semibold text-gray-900 mb-4">Upcoming Payments</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {data.upcomingPayments.map((payment: any) => (
-            <div key={payment.id} className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+            <div key={payment.id} className="bg-white rounded-xl p-4 sm:p-6 border border-gray-200 shadow-sm">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-green-100 text-green-600 rounded-lg flex items-center justify-center">
+                <div className="w-10 h-10 bg-green-100 text-green-600 rounded-lg flex items-center justify-center flex-shrink-0">
                   <Calendar className="w-5 h-5" />
                 </div>
-                <div>
-                  <h4 className="font-semibold text-gray-900">{payment.title}</h4>
-                  <p className="text-sm text-gray-600">{payment.description}</p>
+                <div className="min-w-0 flex-1">
+                  <h4 className="font-semibold text-gray-900 truncate">{payment.title}</h4>
+                  <p className="text-sm text-gray-600 line-clamp-2">{payment.description}</p>
                 </div>
               </div>
               <div className="space-y-2 mb-4">
@@ -603,9 +603,9 @@ const PaymentOverview: React.FC<{
                   <span>₹{payment.finalAmount}</span>
                 </div>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <RefreshCw className="w-4 h-4 text-blue-600" />
+                  <RefreshCw className="w-4 h-4 text-blue-600 flex-shrink-0" />
                   <span className="text-sm text-blue-600">Auto-pay enabled</span>
                 </div>
                 <p className="text-sm text-gray-500">Due: {new Date(payment.dueDate).toLocaleDateString('en-GB')}</p>
@@ -629,7 +629,7 @@ const PaymentOverview: React.FC<{
         </button>
         <button 
           onClick={() => {
-            const semesterFee = data.outstandingPayments.find(p => p.type === 'semester-fee');
+            const semesterFee = data.outstandingPayments.find((p: any) => p.type === 'semester-fee');
             if (semesterFee) {
               onPayNow(semesterFee);
             } else {
@@ -1011,9 +1011,9 @@ const PinVerificationModal: React.FC<{
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl p-8 max-w-md w-full mx-4">
-        <div className="text-center mb-8">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl p-4 sm:p-6 lg:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div className="text-center mb-6 sm:mb-8">
           <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Shield className="w-8 h-8 text-blue-600" />
           </div>
@@ -1485,8 +1485,8 @@ const ReceiptsModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl p-8 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl p-4 sm:p-6 lg:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-semibold text-gray-900">Download Receipts</h3>
           <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600">
@@ -1594,8 +1594,8 @@ const PaymentSettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl p-8 max-w-md w-full mx-4 max-h-[80vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl p-4 sm:p-6 lg:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-semibold text-gray-900">Payment Settings</h3>
           <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600">
@@ -1747,30 +1747,39 @@ const PaymentScreen = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <style jsx global>{`
+        .line-clamp-2 {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+      `}</style>
       <div className="lg:hidden h-16" />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Payment Center</h1>
-              <p className="text-gray-600">Complete transportation payment management</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Payment Center</h1>
+              <p className="text-gray-600 text-sm sm:text-base">Complete transportation payment management</p>
             </div>
             
             {/* User Info & Quick Actions */}
-            <div className="mt-4 sm:mt-0 flex items-center gap-4">
-              <div className="bg-white px-4 py-2 rounded-lg border border-gray-200">
+            <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
+              <div className="bg-white px-3 sm:px-4 py-2 rounded-lg border border-gray-200 flex-1 sm:flex-none">
                 <div className="flex items-center gap-2">
-                  <Wallet className="w-4 h-4 text-blue-600" />
-                  <span className="text-sm font-medium text-gray-900">
+                  <Wallet className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                  <span className="text-sm font-medium text-gray-900 truncate">
                     Wallet: ₹{paymentData.user.accountBalance}
                   </span>
                 </div>
               </div>
               <button 
                 onClick={() => setShowWalletTopup(true)}
-                className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex-shrink-0"
+                title="Top up wallet"
               >
                 <Plus className="w-4 h-4" />
               </button>
@@ -1778,7 +1787,7 @@ const PaymentScreen = () => {
           </div>
 
           {/* Dashboard Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
             <StatCard
               icon={<DollarSign className="w-5 h-5" />}
               label="Outstanding Amount"
@@ -1840,25 +1849,25 @@ const PaymentScreen = () => {
           )}
 
           {/* Navigation Tabs */}
-          <div className="border-b border-gray-200 mb-8">
-            <div className="flex space-x-8">
+          <div className="border-b border-gray-200 mb-6 sm:mb-8">
+            <div className="flex space-x-4 sm:space-x-8 overflow-x-auto">
               {[
                 { key: 'overview', label: 'Overview', icon: <Bus className="w-4 h-4" /> },
-                { key: 'history', label: 'Transaction History', icon: <History className="w-4 h-4" /> },
-                { key: 'methods', label: 'Payment Methods', icon: <CreditCard className="w-4 h-4" /> },
-                { key: 'subscriptions', label: 'Subscriptions', icon: <Repeat className="w-4 h-4" /> },
+                { key: 'history', label: 'History', icon: <History className="w-4 h-4" /> },
+                { key: 'methods', label: 'Methods', icon: <CreditCard className="w-4 h-4" /> },
+                { key: 'subscriptions', label: 'Plans', icon: <Repeat className="w-4 h-4" /> },
               ].map((tab) => (
                 <button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key as any)}
-                  className={`flex items-center gap-2 py-4 px-2 border-b-2 transition-colors ${
+                  className={`flex items-center gap-2 py-3 sm:py-4 px-2 border-b-2 transition-colors whitespace-nowrap ${
                     activeTab === tab.key
                       ? 'border-blue-600 text-blue-700'
                       : 'border-transparent text-gray-500 hover:text-gray-700'
                   }`}
                 >
                   {tab.icon}
-                  <span className="font-medium">{tab.label}</span>
+                  <span className="font-medium text-sm sm:text-base">{tab.label}</span>
                 </button>
               ))}
             </div>

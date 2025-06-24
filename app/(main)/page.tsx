@@ -29,6 +29,16 @@ const userTripData = {
   departureTime: '07:10 AM',
   eta: '12 minutes',
   live: true,
+  seatNumber: 'A12',
+  boardingPoint: 'Main Gate',
+  nextStop: 'College Junction',
+  busNumber: 'TN45-BUS-2024',
+  driverName: 'Rajesh Kumar',
+  driverRating: 4.8,
+  passengerCount: 28,
+  totalSeats: 45,
+  delayStatus: 'on-time', // 'on-time', 'delayed', 'early'
+  estimatedArrival: '07:22 AM'
 };
 
 const userPaymentStatus = {
@@ -42,6 +52,7 @@ const HomeScreen = () => {
   const [userType, setUserType] = useState('');
   const [userEmail, setUserEmail] = useState('');
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [showCardDetails, setShowCardDetails] = useState(false);
 
   useEffect(() => {
     const userTypeStored = localStorage.getItem('userType') || 'student';
@@ -80,42 +91,161 @@ const HomeScreen = () => {
     transition: { duration: 0.5, delay }
   });
 
+  // Theme configuration for minimal theme
+  const currentTheme = {
+    bg: 'bg-white border-2 border-gray-100 shadow-sm',
+    text: 'text-gray-900',
+    subtitle: 'text-gray-500',
+    accent: 'text-blue-600',
+    button: 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600'
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Toaster position="top-right" />
       <div className="lg:hidden h-16" />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <motion.div {...fadeIn()} className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-1">
+        <motion.div {...fadeIn()} className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 leading-tight">
             Welcome back, {userType.charAt(0).toUpperCase() + userType.slice(1)}!
           </h1>
-          <p className="text-gray-600">Here's your transportation summary for today.</p>
+          <p className="text-gray-600 text-sm sm:text-base">Here's your transportation summary for today.</p>
         </motion.div>
 
-        {/* Next Trip Card */}
-        <motion.div {...fadeIn(0.1)} className="mb-8">
-          <div className="card-hover bg-gradient-to-r from-gray-800 to-gray-900 text-white p-6 rounded-2xl shadow-lg">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-sm text-gray-400">Your Next Trip</p>
-                <h2 className="text-2xl font-bold mt-1">{userTripData.routeName}</h2>
-                <p className="text-lg text-amber-400 font-semibold">{userTripData.departureTime}</p>
+        {/* Enhanced Next Trip Card - Minimal Theme */}
+        <motion.div {...fadeIn(0.1)} className="mb-6 sm:mb-8">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Your Next Trip</h2>
+          <div className={`relative overflow-hidden ${currentTheme.bg} rounded-2xl shadow-xl transition-all duration-300`}>
+            <div className="relative p-4 sm:p-6">
+              {/* Header Section */}
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-3 flex-1">
+                  <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center shadow-lg">
+                    <Bus className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h3 className={`text-lg sm:text-xl font-bold ${currentTheme.text} leading-tight`}>
+                      {userTripData.routeName}
+                    </h3>
+                    <p className={`text-sm ${currentTheme.subtitle}`}>
+                      Route {userTripData.routeNumber} • {userTripData.busNumber}
+                    </p>
+                  </div>
+                </div>
+                
+                {/* Status Badges - Fixed for Minimal Theme */}
+                <div className="flex flex-col items-end gap-2 ml-3">
+                  {userTripData.live && (
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-full">
+                      <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                      <span className="text-xs font-medium text-emerald-700">Live</span>
+                    </div>
+                  )}
+                  <div className={`px-3 py-1.5 rounded-full border ${
+                    userTripData.delayStatus === 'on-time' ? 'bg-green-50 border-green-200' :
+                    userTripData.delayStatus === 'delayed' ? 'bg-red-50 border-red-200' :
+                    'bg-blue-50 border-blue-200'
+                  }`}>
+                    <span className={`text-xs font-medium ${
+                      userTripData.delayStatus === 'on-time' ? 'text-green-700' :
+                      userTripData.delayStatus === 'delayed' ? 'text-red-700' :
+                      'text-blue-700'
+                    }`}>
+                      {userTripData.delayStatus === 'on-time' ? 'On Time' : 
+                       userTripData.delayStatus === 'delayed' ? 'Delayed' : 'Early'}
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div className="text-right">
-                <p className="text-sm text-gray-400">ETA</p>
-                <p className="text-2xl font-bold">{userTripData.eta}</p>
-                {userTripData.live && <div className="flex items-center justify-end gap-1.5 mt-1 text-green-400">
-                  <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div> Live
-                </div>}
+
+              {/* Main Info Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+                <div className="text-center">
+                  <Clock className={`w-4 h-4 mx-auto mb-1 ${currentTheme.accent}`} />
+                  <p className={`text-xs ${currentTheme.subtitle}`}>Departure</p>
+                  <p className={`text-sm font-bold ${currentTheme.text}`}>{userTripData.departureTime}</p>
+                </div>
+                <div className="text-center">
+                  <MapPin className={`w-4 h-4 mx-auto mb-1 ${currentTheme.accent}`} />
+                  <p className={`text-xs ${currentTheme.subtitle}`}>ETA</p>
+                  <p className={`text-sm font-bold ${currentTheme.text}`}>{userTripData.eta}</p>
+                </div>
+                <div className="text-center">
+                  <User className={`w-4 h-4 mx-auto mb-1 ${currentTheme.accent}`} />
+                  <p className={`text-xs ${currentTheme.subtitle}`}>Seat</p>
+                  <p className={`text-sm font-bold ${currentTheme.text}`}>{userTripData.seatNumber}</p>
+                </div>
+                <div className="text-center">
+                  <Bus className={`w-4 h-4 mx-auto mb-1 ${currentTheme.accent}`} />
+                  <p className={`text-xs ${currentTheme.subtitle}`}>Passengers</p>
+                  <p className={`text-sm font-bold ${currentTheme.text}`}>{userTripData.passengerCount}/{userTripData.totalSeats}</p>
+                </div>
+              </div>
+
+              {/* Expandable Details */}
+              <motion.div
+                initial={false}
+                animate={{ height: showCardDetails ? 'auto' : 0, opacity: showCardDetails ? 1 : 0 }}
+                transition={{ duration: 0.3 }}
+                className="overflow-hidden"
+              >
+                <div className="border-t border-gray-200 pt-4 mb-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Boarding Point</p>
+                      <p className="text-sm font-medium text-gray-900">{userTripData.boardingPoint}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Next Stop</p>
+                      <p className="text-sm font-medium text-gray-900">{userTripData.nextStop}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Driver</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium text-gray-900">{userTripData.driverName}</p>
+                        <div className="flex items-center gap-1">
+                          {[...Array(5)].map((_, i) => (
+                            <div key={i} className={`w-2 h-2 rounded-full ${i < Math.floor(userTripData.driverRating) ? 'bg-yellow-400' : 'bg-gray-300'}`}></div>
+                          ))}
+                          <span className="text-xs text-gray-500">({userTripData.driverRating})</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Arrival Time</p>
+                      <p className="text-sm font-medium text-gray-900">{userTripData.estimatedArrival}</p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Action Buttons - Optimized for Minimal Theme */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={() => router.push('/live-tracking')}
+                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl transition-all duration-200 font-semibold text-sm backdrop-blur-sm border bg-blue-600 hover:bg-blue-700 text-white border-blue-600 group"
+                >
+                  <Navigation className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                  <span>Track Live</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </button>
+                
+                <button
+                  onClick={() => setShowCardDetails(!showCardDetails)}
+                  className="px-4 py-3 rounded-xl transition-all duration-200 font-medium text-sm border bg-gray-100 hover:bg-gray-200 border-gray-200 text-gray-700"
+                >
+                  {showCardDetails ? 'Less' : 'More'}
+                </button>
+
+                <button
+                  onClick={() => toast.success('Trip details copied to clipboard')}
+                  className="p-3 rounded-xl transition-all duration-200 border bg-gray-100 hover:bg-gray-200 border-gray-200 text-gray-700"
+                >
+                  <QrCode className="w-4 h-4" />
+                </button>
               </div>
             </div>
-            <button
-              onClick={() => router.push('/live-tracking')}
-              className="mt-4 w-full text-center py-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors font-semibold"
-            >
-              Track on Live Map
-            </button>
           </div>
         </motion.div>
 
@@ -124,20 +254,22 @@ const HomeScreen = () => {
             {/* Quick Actions */}
             <motion.div {...fadeIn(0.2)}>
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 {quickActions.map((action) => (
                   <motion.button
                     key={action.title}
-                    whileHover={{ scale: 1.05, y: -5 }}
-                    whileTap={{ scale: 0.95 }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => router.push(action.href)}
-                    className="bg-white rounded-xl p-4 text-left shadow-sm hover:shadow-lg transition-all duration-200 border border-gray-100"
+                    className="bg-white rounded-xl p-4 sm:p-5 text-left shadow-sm hover:shadow-md transition-all duration-200 border border-gray-100 group min-h-[120px] flex flex-col justify-between"
                   >
-                    <div className={`w-12 h-12 bg-gradient-to-br ${action.color} rounded-xl flex items-center justify-center mb-3 shadow-md`}>
-                      <action.icon className="w-6 h-6 text-white" />
+                    <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${action.color} rounded-xl flex items-center justify-center mb-3 shadow-sm group-hover:shadow-md transition-shadow duration-200`}>
+                      <action.icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                     </div>
-                    <h3 className="font-semibold text-gray-800 text-sm">{action.title}</h3>
-                    <p className="text-xs text-gray-500">{action.subtitle}</p>
+                    <div>
+                      <h3 className="font-semibold text-gray-800 text-sm sm:text-base leading-tight mb-1">{action.title}</h3>
+                      <p className="text-xs sm:text-sm text-gray-500 leading-tight">{action.subtitle}</p>
+                    </div>
                   </motion.button>
                 ))}
               </div>
@@ -226,4 +358,4 @@ const QuickLink = ({ href, icon: Icon, text, status, statusColor }: { href: stri
   );
 };
 
-export default HomeScreen; 
+export default HomeScreen;

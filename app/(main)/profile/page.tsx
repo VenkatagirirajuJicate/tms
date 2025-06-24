@@ -527,32 +527,34 @@ Contact: support@traventtms.com
       
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200 shadow-sm">
-        <div className="flex items-center justify-between p-4">
-          <div className="flex items-center space-x-4">
+        <div className="flex items-center justify-between p-3 sm:p-4">
+          <div className="flex items-center space-x-3 sm:space-x-4 min-w-0 flex-1">
             <button
               onClick={() => router.back()}
-              className="text-gray-700 hover:text-blue-600 transition-colors"
+              className="text-gray-700 hover:text-blue-600 transition-colors flex-shrink-0"
             >
-              <ChevronLeft className="w-6 h-6" />
+              <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">Profile</h1>
-              <p className="text-sm text-gray-600">Manage your account and preferences</p>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-lg sm:text-xl font-bold text-gray-900 truncate">Profile</h1>
+              <p className="text-xs sm:text-sm text-gray-600 truncate">Manage your account and preferences</p>
             </div>
           </div>
           
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1 sm:space-x-2">
             <button
               onClick={() => setShowEditProfile(true)}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              title="Edit Profile"
             >
-              <Edit3 className="w-5 h-5 text-gray-600" />
+              <Edit3 className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
             </button>
             <button
               onClick={() => setShowLogoutModal(true)}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              title="Logout"
             >
-              <LogOut className="w-5 h-5 text-gray-600" />
+              <LogOut className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
             </button>
           </div>
         </div>
@@ -593,8 +595,8 @@ Contact: support@traventtms.com
             {activeTab === 'overview' && (
               <div className="space-y-6">
                 {/* Profile Header Card */}
-                <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-                  <div className="flex items-center space-x-4 mb-6">
+                <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-6 shadow-sm">
+                  <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-4 mb-6">
                     <div className="relative">
                       {(isEditing ? tempProfile.avatar : userProfile.avatar) ? (
                         <img
@@ -681,19 +683,19 @@ Contact: support@traventtms.com
                       </div>
                     </div>
                     
-                    <div className="flex space-x-2">
+                    <div className="flex flex-col sm:flex-row gap-2 sm:space-x-2 sm:space-y-0 space-y-2 min-w-0">
                       {isEditing ? (
                         <>
                           <button
                             onClick={handleCancelEdit}
-                            className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors"
+                            className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 sm:px-4 py-2 rounded-lg font-medium transition-colors text-sm sm:text-base whitespace-nowrap"
                           >
                             Cancel
                           </button>
                           <button
                             onClick={handleSaveProfile}
                             disabled={isSaving}
-                            className="bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2"
+                            className="bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white px-3 sm:px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2 text-sm sm:text-base whitespace-nowrap"
                           >
                             {isSaving ? (
                               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -706,10 +708,11 @@ Contact: support@traventtms.com
                       ) : (
                         <button
                           onClick={handleEditProfile}
-                          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2"
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2 text-sm sm:text-base whitespace-nowrap"
                         >
                           <Edit3 className="w-4 h-4" />
-                          <span>Edit Profile</span>
+                          <span className="hidden xs:inline sm:inline">Edit Profile</span>
+                          <span className="xs:hidden sm:hidden">Edit</span>
                         </button>
                       )}
                     </div>

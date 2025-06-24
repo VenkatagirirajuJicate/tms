@@ -92,7 +92,7 @@ const LiveTrackingScreen: React.FC<LiveTrackingScreenProps> = ({ routeNumber: in
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [autoPan, setAutoPan] = useState(true);
-  const [showInfoCards, setShowInfoCards] = useState(true);
+  const [showInfoCards, setShowInfoCards] = useState(false); // Default to false, will be set based on screen size
   const [isSheetExpanded, setIsSheetExpanded] = useState(false);
   const [currentSpeed, setCurrentSpeed] = useState(45); // Simulated speed in km/h
 
@@ -165,6 +165,28 @@ const LiveTrackingScreen: React.FC<LiveTrackingScreenProps> = ({ routeNumber: in
     };
   }, [routeData]);
 
+  // Handle responsive info cards visibility
+  useEffect(() => {
+    const handleResize = () => {
+      const isLargeScreen = window.innerWidth >= 1024; // lg breakpoint (Tailwind's lg breakpoint)
+      if (isLargeScreen) {
+        // Always show cards on large screens
+        setShowInfoCards(true);
+      }
+      // On small screens, don't automatically change the state to preserve user choice
+    };
+
+    // Set initial state based on screen size
+    const isLargeScreen = window.innerWidth >= 1024;
+    setShowInfoCards(isLargeScreen); // Show on large screens, hide on small screens initially
+
+    // Add event listener for window resize
+    window.addEventListener('resize', handleResize);
+
+    // Cleanup
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   if (loading) return <LoadingUI />;
   if (error) return <ErrorUI message={error} />;
   
@@ -199,13 +221,19 @@ const LiveTrackingScreen: React.FC<LiveTrackingScreenProps> = ({ routeNumber: in
             <button 
               onClick={() => setAutoPan(v => !v)} 
               className="bg-white p-3 rounded-full shadow-lg hover:bg-gray-100 transition-colors"
-              title={autoPan ? 'Enable Auto-Pan' : 'Disable Auto-Pan'}
+              title={autoPan ? 'Disable Auto-Pan' : 'Enable Auto-Pan'}
             >
               {autoPan ? <Navigation size={20} /> : <NavigationOff size={20} />}
             </button>
+            {/* Show toggle button only on smaller screens */}
             <button 
-              onClick={() => setShowInfoCards(v => !v)} 
-              className="bg-white p-3 rounded-full shadow-lg hover:bg-gray-100 transition-colors"
+              onClick={() => {
+                // Only allow toggle on smaller screens
+                if (window.innerWidth < 1024) {
+                  setShowInfoCards(v => !v);
+                }
+              }} 
+              className="lg:hidden bg-white p-3 rounded-full shadow-lg hover:bg-gray-100 transition-colors"
               title={showInfoCards ? 'Hide Info Cards' : 'Show Info Cards'}
             >
               {showInfoCards ? <EyeOff size={20} /> : <Eye size={20} />}

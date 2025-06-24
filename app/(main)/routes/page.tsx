@@ -223,13 +223,13 @@ const RoutesPage = () => {
   const [activeTab, setActiveTab] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({
-    status: [],
+    status: [] as string[],
     occupancyRange: [0, 100] as [number, number],
     distanceRange: [0, 100] as [number, number],
     departureTimeRange: ['06:00', '09:00'] as [string, string],
-    driver: [],
-    vehicleType: [],
-    routeType: [],
+    driver: [] as string[],
+    vehicleType: [] as string[],
+    routeType: [] as string[],
     showInactive: false,
   });
 

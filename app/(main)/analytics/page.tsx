@@ -1,22 +1,20 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast, Toaster } from 'react-hot-toast';
 import { 
-  ChevronLeft, TrendingUp, TrendingDown, Users, Bus, Clock, MapPin, 
-  DollarSign, Fuel, Shield, Zap, Filter, Download, RefreshCw,
-  AlertTriangle, CheckCircle, ArrowUp, ArrowDown, Calendar,
-  UserCheck, Route, Gauge, Leaf, BarChart3, PieChart as PieChartIcon,
-  LineChart as LineChartIcon, Activity, Settings, Eye, Target,
-  ThermometerSun, CloudRain, Sun, Navigation, Timer, Banknote
+  ArrowLeft, Activity, Users, TrendingUp, Download, RefreshCw, Fuel, Bus, 
+  Route, Calendar, BarChart3, Leaf, Star, ArrowRight, Filter, ArrowUp, ArrowDown,
+  ChevronLeft, CheckCircle, DollarSign, Gauge, LineChart as LineChartIcon, Sun, 
+  Shield, UserCheck
 } from 'lucide-react';
 import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, LineChart, Line, Area, AreaChart, ComposedChart,
-  ReferenceLine, Scatter, ScatterChart
+  LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, 
+  Tooltip, Legend, ResponsiveContainer, ScatterChart, Scatter, ComposedChart,
+  ReferenceLine
 } from 'recharts';
-import toast, { Toaster } from 'react-hot-toast';
 
 const Analytics = () => {
   const router = useRouter();
@@ -377,7 +375,7 @@ const Analytics = () => {
 
         {/* Main KPI Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4 mb-8">
-          {mainKPIs.map((kpi, index) => (
+          {mainKPIs.map((kpi) => (
             <StatCard key={kpi.title} {...kpi} />
           ))}
         </div>
@@ -603,7 +601,7 @@ const Analytics = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {analyticsData.routes.map((route, index) => (
+                  {analyticsData.routes.map((route) => (
                     <tr key={route.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
@@ -670,7 +668,7 @@ const Analytics = () => {
                 <tbody className="divide-y divide-gray-200">
                   {analyticsData.drivers
                     .sort((a, b) => b.rating - a.rating)
-                    .map((driver, index) => (
+                    .map((driver) => (
                     <tr key={driver.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
@@ -745,7 +743,7 @@ const Analytics = () => {
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            {analyticsData.environmental.map((metric, index) => (
+            {analyticsData.environmental.map((metric) => (
               <div key={metric.metric} className="bg-white rounded-lg p-3 sm:p-4 border border-green-100">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-xs sm:text-sm font-medium text-gray-600 truncate pr-2" title={metric.metric}>{metric.metric}</p>

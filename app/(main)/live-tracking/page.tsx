@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useMemo, useRef } from 'react'
+import React, { useState, useEffect, useMemo, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation' 
 import { motion } from 'framer-motion'
 import { ChevronLeft, RefreshCw, MapPin, Clock, Gauge, Sun, AlertTriangle, Navigation, NavigationOff, Eye, EyeOff, List, User, ChevronUp, Bus } from 'lucide-react'
@@ -67,11 +67,19 @@ const ErrorUI: React.FC<{ message: string }> = ({ message }) => (
   </div>
 );
 
-const LiveTrackingPage = () => {
+const LiveTrackingContent = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const routeNumber = searchParams.get('routeNumber') || '17';
     return <LiveTrackingScreen routeNumber={routeNumber} />;
+}
+
+const LiveTrackingPage = () => {
+    return (
+        <Suspense fallback={<LoadingUI />}>
+            <LiveTrackingContent />
+        </Suspense>
+    );
 }
 
 

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bus, QrCode, MapPin, Clock, CreditCard, ArrowRight, Check } from 'lucide-react';
+import { Bus, QrCode, MapPin, CreditCard, ArrowRight, Check } from 'lucide-react';
 
 const onboardData = [
   {

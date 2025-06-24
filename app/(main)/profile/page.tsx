@@ -1085,7 +1085,7 @@ Contact: support@traventtms.com
                 </button>
               </div>
               
-              {navigator.share && (
+              {typeof navigator !== 'undefined' && 'share' in navigator && (
                 <button
                   onClick={() => handleShare('native')}
                   className="w-full mb-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"

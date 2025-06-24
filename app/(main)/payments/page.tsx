@@ -40,7 +40,24 @@ import {
   Settings,
   HelpCircle,
   FileText,
-  Repeat
+  Repeat,
+  X,
+  ArrowLeft,
+  MoreVertical,
+  Phone,
+  Mail,
+  MapPin,
+  Camera,
+  AlertCircle,
+  TrendingDown,
+  Copy,
+  Send,
+  Trash2,
+  BellOff,
+  ArrowUpDown,
+  ArrowUpCircle,
+  ArrowDownCircle,
+  ExternalLink
 } from 'lucide-react';
 import { useRef } from 'react';
 import jsPDF from 'jspdf';
@@ -1289,7 +1306,7 @@ const WalletTopupModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">Top-up Successful!</h3>
             <p className="text-gray-600 mb-4">₹{amount} has been added to your wallet.</p>
-            <p className="text-sm text-green-600 mb-6">New balance: ₹{parseInt(paymentData.user.accountBalance) + parseInt(amount)}</p>
+            <p className="text-sm text-green-600 mb-6">New balance: ₹{Number(paymentData.user.accountBalance) + Number(amount)}</p>
             <button 
               onClick={onClose}
               className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"

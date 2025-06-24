@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, Check, X } from 'lucide-react';
+import { ChevronLeft, UserPlus, AlertCircle } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 
 interface FormData {
@@ -210,7 +210,7 @@ const NewUserForm = () => {
                 : 'bg-[#2C2C2C] text-[#888]'
             }`}
           >
-            {step < currentStep ? <Check size={16} /> : step}
+            {step < currentStep ? <UserPlus size={16} /> : step}
           </div>
           {step < 4 && (
             <div

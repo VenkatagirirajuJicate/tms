@@ -1124,7 +1124,7 @@ const BookingConfirmation: React.FC<{
           <span className="font-medium text-blue-800">E-Ticket Generated</span>
         </div>
         <p className="text-sm text-blue-700">
-          Your boarding pass will be available after 7:00 PM for tomorrow's trip
+          Your boarding pass will be available after 7:00 PM for tomorrow&apos;s trip
         </p>
       </div>
 

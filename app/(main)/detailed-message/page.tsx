@@ -92,7 +92,6 @@ const Header = ({
 };
 
 const DetailedMessageView = () => {
-  const router = useRouter();
   
   // In a real app, you would get this from route params or context
   const notificationGroup = dummyNotificationGroup;

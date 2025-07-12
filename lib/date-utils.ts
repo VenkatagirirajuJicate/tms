@@ -198,6 +198,7 @@ export async function canBookTrip(tripDate: Date, currentTime: Date = new Date()
   bookingWindow?: string;
 }> {
   const bookingInfo = await getBookingWindowInfo(tripDate);
+  console.log('Booking check at:', currentTime); // Log the current time for debugging
   
   if (bookingInfo.isPastBookingDeadline) {
     return {

@@ -4,10 +4,10 @@ import { Student, StudentDashboardData, Booking, Payment, Grievance, Route, Sche
 import { sessionManager } from './session';
 
 // Note: Type definitions would be generated from your Supabase schema
-type Database = any;
+type Database = Record<string, unknown>;
 
 // Lazy client creation to avoid environment variable loading issues
-let _supabase: any = null;
+let _supabase: ReturnType<typeof createSupabaseClient<Database>> | null = null;
 
 function getSupabaseClient() {
   if (!_supabase) {
@@ -31,9 +31,9 @@ function getSupabaseClient() {
 }
 
 // Export the lazy client
-export const supabase = new Proxy({} as any, {
+export const supabase = new Proxy({} as ReturnType<typeof createSupabaseClient<Database>>, {
   get(target, prop) {
-    return getSupabaseClient()[prop];
+    return getSupabaseClient()[prop as keyof ReturnType<typeof createSupabaseClient<Database>>];
   }
 });
 
@@ -43,135 +43,135 @@ export function createClient() {
 }
 
 // Data transformation helpers
-const transformStudent = (dbStudent: any): Student => ({
-  id: dbStudent.id,
-  studentName: dbStudent.student_name,
-  rollNumber: dbStudent.roll_number,
-  email: dbStudent.email,
-  mobile: dbStudent.mobile,
-  passwordHash: dbStudent.password_hash,
-  dateOfBirth: dbStudent.date_of_birth,
-  gender: dbStudent.gender,
-  fatherName: dbStudent.father_name,
-  motherName: dbStudent.mother_name,
-  address: dbStudent.address,
-  addressStreet: dbStudent.address_street,
-  addressDistrict: dbStudent.address_district,
-  addressState: dbStudent.address_state,
-  addressPinCode: dbStudent.address_pin_code,
-  emergencyContactName: dbStudent.emergency_contact_name,
-  emergencyContactPhone: dbStudent.emergency_contact_phone,
-  academicYear: dbStudent.academic_year,
-  semester: dbStudent.semester,
-  firstLoginCompleted: dbStudent.first_login_completed,
-  profileCompletionPercentage: dbStudent.profile_completion_percentage,
-  lastLogin: dbStudent.last_login,
-  department: dbStudent.department,
-  program: dbStudent.program,
-  institution: dbStudent.institution,
-  transportProfile: dbStudent.transport_profile,
-  createdAt: dbStudent.created_at,
-  updatedAt: dbStudent.updated_at
+const transformStudent = (dbStudent: Record<string, unknown>): Student => ({
+  id: dbStudent.id as string,
+  studentName: dbStudent.student_name as string,
+  rollNumber: dbStudent.roll_number as string,
+  email: dbStudent.email as string,
+  mobile: dbStudent.mobile as string,
+  passwordHash: dbStudent.password_hash as string,
+  dateOfBirth: dbStudent.date_of_birth as string,
+  gender: dbStudent.gender as string,
+  fatherName: dbStudent.father_name as string,
+  motherName: dbStudent.mother_name as string,
+  address: dbStudent.address as string,
+  addressStreet: dbStudent.address_street as string,
+  addressDistrict: dbStudent.address_district as string,
+  addressState: dbStudent.address_state as string,
+  addressPinCode: dbStudent.address_pin_code as string,
+  emergencyContactName: dbStudent.emergency_contact_name as string,
+  emergencyContactPhone: dbStudent.emergency_contact_phone as string,
+  academicYear: dbStudent.academic_year as string,
+  semester: dbStudent.semester as string,
+  firstLoginCompleted: dbStudent.first_login_completed as boolean,
+  profileCompletionPercentage: dbStudent.profile_completion_percentage as number,
+  lastLogin: dbStudent.last_login as string,
+  department: dbStudent.department as Record<string, unknown>,
+  program: dbStudent.program as Record<string, unknown>,
+  institution: dbStudent.institution as Record<string, unknown>,
+  transportProfile: dbStudent.transport_profile as Record<string, unknown>,
+  createdAt: new Date(dbStudent.created_at as string),
+  updatedAt: new Date(dbStudent.updated_at as string)
 });
 
-const transformRoute = (dbRoute: any): Route => ({
-  id: dbRoute.id,
-  routeNumber: dbRoute.route_number,
-  routeName: dbRoute.route_name,
-  startLocation: dbRoute.start_location,
-  endLocation: dbRoute.end_location,
-  startLatitude: dbRoute.start_latitude,
-  startLongitude: dbRoute.start_longitude,
-  endLatitude: dbRoute.end_latitude,
-  endLongitude: dbRoute.end_longitude,
-  departureTime: dbRoute.departure_time,
-  arrivalTime: dbRoute.arrival_time,
-  distance: dbRoute.distance,
-  duration: dbRoute.duration,
-  totalCapacity: dbRoute.total_capacity,
-  currentPassengers: dbRoute.current_passengers,
-  status: dbRoute.status,
-  driverId: dbRoute.driver_id,
-  vehicleId: dbRoute.vehicle_id,
-  stops: dbRoute.stops?.map((stop: any) => ({
-    id: stop.id,
-    routeId: stop.route_id,
-    stopName: stop.stop_name,
-    stopTime: stop.stop_time,
-    sequenceOrder: stop.sequence_order,
-    latitude: stop.latitude,
-    longitude: stop.longitude,
-    isMajorStop: stop.is_major_stop,
-    createdAt: stop.created_at
-  })) || [],
-  fare: dbRoute.fare,
-  createdAt: dbRoute.created_at,
-  updatedAt: dbRoute.updated_at
+const transformRoute = (dbRoute: Record<string, unknown>): Route => ({
+  id: dbRoute.id as string,
+  routeNumber: dbRoute.route_number as string,
+  routeName: dbRoute.route_name as string,
+  startLocation: dbRoute.start_location as string,
+  endLocation: dbRoute.end_location as string,
+  startLatitude: dbRoute.start_latitude as number,
+  startLongitude: dbRoute.start_longitude as number,
+  endLatitude: dbRoute.end_latitude as number,
+  endLongitude: dbRoute.end_longitude as number,
+  departureTime: dbRoute.departure_time as string,
+  arrivalTime: dbRoute.arrival_time as string,
+  distance: dbRoute.distance as number,
+  duration: dbRoute.duration as string,
+  totalCapacity: dbRoute.total_capacity as number,
+  currentPassengers: dbRoute.current_passengers as number,
+  status: dbRoute.status as string,
+  driverId: dbRoute.driver_id as string,
+  vehicleId: dbRoute.vehicle_id as string,
+  stops: ((dbRoute.stops as Record<string, unknown>[]) || []).map((stop: Record<string, unknown>) => ({
+    id: stop.id as string,
+    routeId: stop.route_id as string,
+    stopName: stop.stop_name as string,
+    stopTime: stop.stop_time as string,
+    sequenceOrder: stop.sequence_order as number,
+    latitude: stop.latitude as number,
+    longitude: stop.longitude as number,
+    isMajorStop: stop.is_major_stop as boolean,
+    createdAt: new Date(stop.created_at as string)
+  })),
+  fare: dbRoute.fare as number,
+  createdAt: new Date(dbRoute.created_at as string),
+  updatedAt: new Date(dbRoute.updated_at as string)
 });
 
-const transformBooking = (dbBooking: any): Booking => ({
-  id: dbBooking.id,
-  studentId: dbBooking.student_id,
-  routeId: dbBooking.route_id,
-  scheduleId: dbBooking.schedule_id,
-  bookingDate: dbBooking.booking_date,
-  tripDate: dbBooking.trip_date,
-  boardingStop: dbBooking.boarding_stop,
-  seatNumber: dbBooking.seat_number,
-  status: dbBooking.status,
-  paymentStatus: dbBooking.payment_status,
-  amount: dbBooking.amount,
-  qrCode: dbBooking.qr_code,
-  specialRequirements: dbBooking.special_requirements,
-  route: dbBooking.route ? transformRoute(dbBooking.route) : undefined,
+const transformBooking = (dbBooking: Record<string, unknown>): Booking => ({
+  id: dbBooking.id as string,
+  studentId: dbBooking.student_id as string,
+  routeId: dbBooking.route_id as string,
+  scheduleId: dbBooking.schedule_id as string,
+  bookingDate: dbBooking.booking_date as string,
+  tripDate: dbBooking.trip_date as string,
+  boardingStop: dbBooking.boarding_stop as string,
+  seatNumber: dbBooking.seat_number as string,
+  status: dbBooking.status as string,
+  paymentStatus: dbBooking.payment_status as string,
+  amount: dbBooking.amount as number,
+  qrCode: dbBooking.qr_code as string,
+  specialRequirements: dbBooking.special_requirements as string,
+  route: dbBooking.route ? transformRoute(dbBooking.route as Record<string, unknown>) : undefined,
   schedule: dbBooking.schedule ? {
-    id: dbBooking.schedule.id,
-    routeId: dbBooking.schedule.route_id,
-    scheduleDate: dbBooking.schedule.schedule_date,
-    departureTime: dbBooking.schedule.departure_time,
-    arrivalTime: dbBooking.schedule.arrival_time,
-    availableSeats: dbBooking.schedule.available_seats,
-    bookedSeats: dbBooking.schedule.booked_seats,
-    status: dbBooking.schedule.status,
-    driverId: dbBooking.schedule.driver_id,
-    vehicleId: dbBooking.schedule.vehicle_id,
-    createdAt: dbBooking.schedule.created_at
+    id: dbBooking.schedule.id as string,
+    routeId: dbBooking.schedule.route_id as string,
+    scheduleDate: dbBooking.schedule.schedule_date as string,
+    departureTime: dbBooking.schedule.departure_time as string,
+    arrivalTime: dbBooking.schedule.arrival_time as string,
+    availableSeats: dbBooking.schedule.available_seats as number,
+    bookedSeats: dbBooking.schedule.booked_seats as number,
+    status: dbBooking.schedule.status as string,
+    driverId: dbBooking.schedule.driver_id as string,
+    vehicleId: dbBooking.schedule.vehicle_id as string,
+    createdAt: new Date(dbBooking.schedule.created_at as string)
   } : undefined,
-  createdAt: dbBooking.created_at,
-  updatedAt: dbBooking.updated_at
+  createdAt: new Date(dbBooking.created_at as string),
+  updatedAt: new Date(dbBooking.updated_at as string)
 });
 
-const transformPayment = (dbPayment: any): Payment => ({
-  id: dbPayment.id,
-  studentId: dbPayment.student_id,
-  bookingId: dbPayment.booking_id,
-  amount: dbPayment.amount,
-  paymentType: dbPayment.payment_type,
-  paymentMethod: dbPayment.payment_method,
-  status: dbPayment.status,
-  transactionId: dbPayment.transaction_id,
-  description: dbPayment.description,
-  receiptNumber: dbPayment.receipt_number,
-  createdAt: dbPayment.created_at,
-  updatedAt: dbPayment.updated_at
+const transformPayment = (dbPayment: Record<string, unknown>): Payment => ({
+  id: dbPayment.id as string,
+  studentId: dbPayment.student_id as string,
+  bookingId: dbPayment.booking_id as string,
+  amount: dbPayment.amount as number,
+  paymentType: dbPayment.payment_type as string,
+  paymentMethod: dbPayment.payment_method as string,
+  status: dbPayment.status as string,
+  transactionId: dbPayment.transaction_id as string,
+  description: dbPayment.description as string,
+  receiptNumber: dbPayment.receipt_number as string,
+  createdAt: new Date(dbPayment.created_at as string),
+  updatedAt: new Date(dbPayment.updated_at as string)
 });
 
-const transformGrievance = (dbGrievance: any): Grievance => ({
-  id: dbGrievance.id,
-  studentId: dbGrievance.student_id,
-  routeId: dbGrievance.route_id,
-  driverName: dbGrievance.driver_name,
-  category: dbGrievance.category,
-  priority: dbGrievance.priority,
-  subject: dbGrievance.subject,
-  description: dbGrievance.description,
-  status: dbGrievance.status,
-  assignedTo: dbGrievance.assigned_to,
-  resolution: dbGrievance.resolution,
-  attachments: dbGrievance.attachments,
-  createdAt: dbGrievance.created_at,
-  updatedAt: dbGrievance.updated_at,
-  resolvedAt: dbGrievance.resolved_at
+const transformGrievance = (dbGrievance: Record<string, unknown>): Grievance => ({
+  id: dbGrievance.id as string,
+  studentId: dbGrievance.student_id as string,
+  routeId: dbGrievance.route_id as string,
+  driverName: dbGrievance.driver_name as string,
+  category: dbGrievance.category as string,
+  priority: dbGrievance.priority as string,
+  subject: dbGrievance.subject as string,
+  description: dbGrievance.description as string,
+  status: dbGrievance.status as string,
+  assignedTo: dbGrievance.assigned_to as string,
+  resolution: dbGrievance.resolution as string,
+  attachments: dbGrievance.attachments as string[],
+  createdAt: new Date(dbGrievance.created_at as string),
+  updatedAt: new Date(dbGrievance.updated_at as string),
+  resolvedAt: dbGrievance.resolved_at as string
 });
 
 // Helper functions for student operations
@@ -338,16 +338,16 @@ export const studentHelpers = {
           if (!routeError && routeData) {
             transportStatus.hasActiveRoute = true;
             transportStatus.routeInfo = {
-              id: routeData.id,
-              route_number: routeData.route_number,
-              route_name: routeData.route_name,
-              start_location: routeData.start_location,
-              end_location: routeData.end_location,
-              departure_time: routeData.departure_time,
-              arrival_time: routeData.arrival_time,
-              fare: routeData.fare,
-              status: routeData.status,
-              boarding_point: profile.boarding_point
+              id: routeData.id as string,
+              route_number: routeData.route_number as string,
+              route_name: routeData.route_name as string,
+              start_location: routeData.start_location as string,
+              end_location: routeData.end_location as string,
+              departure_time: routeData.departure_time as string,
+              arrival_time: routeData.arrival_time as string,
+              fare: routeData.fare as number,
+              status: routeData.status as string,
+              boarding_point: profile.boarding_point as string
             };
             
             console.log('✅ Active route found:', routeData.route_number, '-', routeData.route_name);
@@ -396,7 +396,7 @@ export const studentHelpers = {
       .order('route_number');
 
     if (error) throw error;
-    return data?.map(transformRoute) || [];
+    return (data || []).map(transformRoute) || [];
   },
 
   // Get student's allocated route with boarding stop
@@ -451,31 +451,31 @@ export const studentHelpers = {
 
       // Transform route data to match our interface with proper field mapping
       const transformedRoute: Route = {
-        id: allocation.route.id,
-        routeNumber: allocation.route.route_number,
-        routeName: allocation.route.route_name,
-        startLocation: allocation.route.start_location,
-        endLocation: allocation.route.end_location,
-        distance: allocation.route.distance,
-        duration: allocation.route.duration,
-        departureTime: allocation.route.departure_time,
-        arrivalTime: allocation.route.arrival_time,
-        fare: allocation.route.fare,
-        totalCapacity: allocation.route.total_capacity,
-        currentPassengers: allocation.route.current_passengers || 0,
-        status: allocation.route.status,
-        createdAt: new Date(allocation.route.created_at),
-        updatedAt: new Date(allocation.route.updated_at),
+        id: allocation.route.id as string,
+        routeNumber: allocation.route.route_number as string,
+        routeName: allocation.route.route_name as string,
+        startLocation: allocation.route.start_location as string,
+        endLocation: allocation.route.end_location as string,
+        distance: allocation.route.distance as number,
+        duration: allocation.route.duration as string,
+        departureTime: allocation.route.departure_time as string,
+        arrivalTime: allocation.route.arrival_time as string,
+        fare: allocation.route.fare as number,
+        totalCapacity: allocation.route.total_capacity as number,
+        currentPassengers: allocation.route.current_passengers as number || 0,
+        status: allocation.route.status as string,
+        createdAt: new Date(allocation.route.created_at as string),
+        updatedAt: new Date(allocation.route.updated_at as string),
         stops: routeStops?.map(stop => ({
-          id: stop.id,
-          routeId: stop.route_id,
-          stopName: stop.stop_name,
-          stopTime: stop.stop_time,
-          sequenceOrder: stop.sequence_order || 0,
-          latitude: stop.latitude,
-          longitude: stop.longitude,
-          isMajorStop: stop.is_major_stop || false,
-          createdAt: new Date(stop.created_at)
+          id: stop.id as string,
+          routeId: stop.route_id as string,
+          stopName: stop.stop_name as string,
+          stopTime: stop.stop_time as string,
+          sequenceOrder: stop.sequence_order as number || 0,
+          latitude: stop.latitude as number,
+          longitude: stop.longitude as number,
+          isMajorStop: stop.is_major_stop as boolean || false,
+          createdAt: new Date(stop.created_at as string)
         })) || []
       };
 
@@ -485,15 +485,15 @@ export const studentHelpers = {
         const foundStop = routeStops.find(stop => stop.id === allocation.boarding_stop_id);
         if (foundStop) {
           boardingStop = {
-            id: foundStop.id,
-            routeId: foundStop.route_id,
-            stopName: foundStop.stop_name,
-            stopTime: foundStop.stop_time,
-            sequenceOrder: foundStop.sequence_order || 0,
-            latitude: foundStop.latitude,
-            longitude: foundStop.longitude,
-            isMajorStop: foundStop.is_major_stop || false,
-            createdAt: new Date(foundStop.created_at)
+            id: foundStop.id as string,
+            routeId: foundStop.route_id as string,
+            stopName: foundStop.stop_name as string,
+            stopTime: foundStop.stop_time as string,
+            sequenceOrder: foundStop.sequence_order as number || 0,
+            latitude: foundStop.latitude as number,
+            longitude: foundStop.longitude as number,
+            isMajorStop: foundStop.is_major_stop as boolean || false,
+            createdAt: new Date(foundStop.created_at as string)
           };
         }
       }
@@ -502,9 +502,9 @@ export const studentHelpers = {
         route: transformedRoute,
         boardingStop,
         allocation: {
-          id: allocation.id,
-          allocatedAt: new Date(allocation.allocated_at),
-          isActive: allocation.is_active
+          id: allocation.id as string,
+          allocatedAt: new Date(allocation.allocated_at as string),
+          isActive: allocation.is_active as boolean
         }
       };
 
@@ -603,53 +603,53 @@ export const studentHelpers = {
 
       // Transform route data with proper field mapping
       const transformedRoute: Route = {
-        id: routeStop.route.id,
-        routeNumber: routeStop.route.route_number,
-        routeName: routeStop.route.route_name,
-        startLocation: routeStop.route.start_location,
-        endLocation: routeStop.route.end_location,
-        distance: routeStop.route.distance,
-        duration: routeStop.route.duration,
-        departureTime: routeStop.route.departure_time,
-        arrivalTime: routeStop.route.arrival_time,
-        fare: routeStop.route.fare,
-        totalCapacity: routeStop.route.total_capacity,
-        currentPassengers: routeStop.route.current_passengers || 0,
-        status: routeStop.route.status,
-        createdAt: new Date(routeStop.route.created_at),
-        updatedAt: new Date(routeStop.route.updated_at),
+        id: routeStop.route.id as string,
+        routeNumber: routeStop.route.route_number as string,
+        routeName: routeStop.route.route_name as string,
+        startLocation: routeStop.route.start_location as string,
+        endLocation: routeStop.route.end_location as string,
+        distance: routeStop.route.distance as number,
+        duration: routeStop.route.duration as string,
+        departureTime: routeStop.route.departure_time as string,
+        arrivalTime: routeStop.route.arrival_time as string,
+        fare: routeStop.route.fare as number,
+        totalCapacity: routeStop.route.total_capacity as number,
+        currentPassengers: routeStop.route.current_passengers as number || 0,
+        status: routeStop.route.status as string,
+        createdAt: new Date(routeStop.route.created_at as string),
+        updatedAt: new Date(routeStop.route.updated_at as string),
         stops: allRouteStops?.map(stop => ({
-          id: stop.id,
-          routeId: stop.route_id,
-          stopName: stop.stop_name,
-          stopTime: stop.stop_time,
-          sequenceOrder: stop.sequence_order || 0,
-          latitude: stop.latitude,
-          longitude: stop.longitude,
-          isMajorStop: stop.is_major_stop || false,
-          createdAt: new Date(stop.created_at)
+          id: stop.id as string,
+          routeId: stop.route_id as string,
+          stopName: stop.stop_name as string,
+          stopTime: stop.stop_time as string,
+          sequenceOrder: stop.sequence_order as number || 0,
+          latitude: stop.latitude as number,
+          longitude: stop.longitude as number,
+          isMajorStop: stop.is_major_stop as boolean || false,
+          createdAt: new Date(stop.created_at as string)
         })) || []
       };
 
       // Transform boarding stop
       const boardingStop: RouteStop = {
-        id: routeStop.id,
-        routeId: routeStop.route_id,
-        stopName: routeStop.stop_name,
-        stopTime: routeStop.stop_time,
-        sequenceOrder: routeStop.sequence_order || 0,
-        latitude: routeStop.latitude,
-        longitude: routeStop.longitude,
-        isMajorStop: routeStop.is_major_stop || false,
-        createdAt: new Date(routeStop.created_at)
+        id: routeStop.id as string,
+        routeId: routeStop.route_id as string,
+        stopName: routeStop.stop_name as string,
+        stopTime: routeStop.stop_time as string,
+        sequenceOrder: routeStop.sequence_order as number || 0,
+        latitude: routeStop.latitude as number,
+        longitude: routeStop.longitude as number,
+        isMajorStop: routeStop.is_major_stop as boolean || false,
+        createdAt: new Date(routeStop.created_at as string)
       };
 
       return {
         route: transformedRoute,
         boardingStop,
         allocation: {
-          id: student.transport_profile.id,
-          allocatedAt: new Date(student.transport_profile.created_at),
+          id: student.transport_profile.id as string,
+          allocatedAt: new Date(student.transport_profile.created_at as string),
           isActive: student.transport_profile.transport_status === 'active'
         }
       };
@@ -778,21 +778,21 @@ export const studentHelpers = {
       const schedulesData = await response.json();
       
       // Convert to expected format
-      return schedulesData.map((schedule: any) => ({
-        id: schedule.id,
-        scheduleDate: new Date(schedule.schedule_date),
-        departureTime: schedule.departure_time,
-        arrivalTime: schedule.arrival_time,
-        availableSeats: schedule.available_seats,
-        bookedSeats: schedule.booked_seats,
-        totalSeats: schedule.total_seats,
-        bookingEnabled: schedule.booking_enabled,
-        bookingDeadline: schedule.booking_deadline,
-        specialInstructions: schedule.special_instructions,
-        status: schedule.status,
-        isBookingWindowOpen: schedule.is_booking_window_open,
-        isBookingAvailable: schedule.is_booking_available,
-        userBooking: schedule.user_booking
+      return (schedulesData || []).map((schedule: Record<string, unknown>) => ({
+        id: schedule.id as string,
+        scheduleDate: new Date(schedule.schedule_date as string),
+        departureTime: schedule.departure_time as string,
+        arrivalTime: schedule.arrival_time as string,
+        availableSeats: schedule.available_seats as number,
+        bookedSeats: schedule.booked_seats as number,
+        totalSeats: schedule.total_seats as number,
+        bookingEnabled: schedule.booking_enabled as boolean,
+        bookingDeadline: schedule.booking_deadline as string,
+        specialInstructions: schedule.special_instructions as string,
+        status: schedule.status as string,
+        isBookingWindowOpen: schedule.is_booking_window_open as boolean,
+        isBookingAvailable: schedule.is_booking_available as boolean,
+        userBooking: schedule.user_booking as Record<string, unknown>
       }));
       
     } catch (error: any) {
@@ -846,9 +846,9 @@ export const studentHelpers = {
 
         if (stop) {
           boardingStop = {
-            id: stop.id,
-            stopName: stop.stop_name,
-            stopTime: stop.stop_time
+            id: stop.id as string,
+            stopName: stop.stop_name as string,
+            stopTime: stop.stop_time as string
           };
         }
       }
@@ -857,22 +857,22 @@ export const studentHelpers = {
       if (!boardingStop) {
         boardingStop = {
           id: 'default-stop',
-          stopName: route.start_location,
-          stopTime: route.departure_time
+          stopName: route.start_location as string,
+          stopTime: route.departure_time as string
         };
       }
 
       return {
         id: `legacy-${student.id}`,
         route: {
-          id: route.id,
-          routeName: route.route_name,
-          routeNumber: route.route_number,
-          startLocation: route.start_location,
-          endLocation: route.end_location,
-          fare: route.fare,
-          departureTime: route.departure_time,
-          arrivalTime: route.arrival_time
+          id: route.id as string,
+          routeName: route.route_name as string,
+          routeNumber: route.route_number as string,
+          startLocation: route.start_location as string,
+          endLocation: route.end_location as string,
+          fare: route.fare as number,
+          departureTime: route.departure_time as string,
+          arrivalTime: route.arrival_time as string
         },
         boardingStop: boardingStop,
         isActive: true
@@ -936,13 +936,13 @@ export const studentHelpers = {
       if (error) throw error;
 
       // Filter out schedules with inactive routes
-      const activeSchedules = schedules?.filter(schedule => 
+      const activeSchedules = (schedules || []).filter(schedule => 
         schedule.routes && schedule.routes.status === 'active'
       ) || [];
 
       // Check for existing bookings for this student
       const schedulesWithBookings = await Promise.all(
-        activeSchedules.map(async (schedule) => {
+        (activeSchedules || []).map(async (schedule) => {
           let userBooking = null;
           
           if (studentId) {
@@ -956,11 +956,11 @@ export const studentHelpers = {
             
             if (booking) {
               userBooking = {
-                id: booking.id,
-                status: booking.status,
-                seatNumber: booking.seat_number,
-                qrCode: booking.qr_code,
-                paymentStatus: booking.payment_status
+                id: booking.id as string,
+                status: booking.status as string,
+                seatNumber: booking.seat_number as string,
+                qrCode: booking.qr_code as string,
+                paymentStatus: booking.payment_status as string
               };
             }
           }
@@ -974,13 +974,13 @@ export const studentHelpers = {
           const isBookingWindowOpen = new Date() < bookingWindowCloseTime;
 
           return {
-            id: schedule.id,
+            id: schedule.id as string,
             scheduleDate: new Date(schedule.schedule_date + 'T00:00:00'),
-            departureTime: schedule.departure_time,
-            arrivalTime: schedule.arrival_time,
-            availableSeats: schedule.available_seats,
-            bookedSeats: schedule.booked_seats || 0,
-            status: schedule.status,
+            departureTime: schedule.departure_time as string,
+            arrivalTime: schedule.arrival_time as string,
+            availableSeats: schedule.available_seats as number,
+            bookedSeats: schedule.booked_seats as number || 0,
+            status: schedule.status as string,
             isBookingWindowOpen,
             isBookingAvailable: isBookingWindowOpen && schedule.available_seats > 0,
             userBooking
@@ -1175,24 +1175,24 @@ export const studentHelpers = {
 
       // Transform and return the detailed profile data
       return {
-        mobile: student.mobile,
-        dateOfBirth: student.date_of_birth,
-        gender: student.gender,
-        institutionName: student.institution_name,
-        departmentName: student.department_name,
-        programName: student.program_name,
-        degreeName: student.degree_name,
-        fatherName: student.father_name,
-        fatherMobile: student.father_mobile,
-        motherName: student.mother_name,
-        motherMobile: student.mother_mobile,
-        emergencyContactName: student.emergency_contact_name,
-        emergencyContactPhone: student.emergency_contact_phone,
-        addressStreet: student.address_street,
-        addressDistrict: student.address_district,
-        addressState: student.address_state,
-        addressPinCode: student.address_pin_code,
-        isProfileComplete: student.is_profile_complete
+        mobile: student.mobile as string,
+        dateOfBirth: student.date_of_birth as string,
+        gender: student.gender as string,
+        institutionName: student.institution_name as string,
+        departmentName: student.department_name as string,
+        programName: student.program_name as string,
+        degreeName: student.degree_name as string,
+        fatherName: student.father_name as string,
+        fatherMobile: student.father_mobile as string,
+        motherName: student.mother_name as string,
+        motherMobile: student.mother_mobile as string,
+        emergencyContactName: student.emergency_contact_name as string,
+        emergencyContactPhone: student.emergency_contact_phone as string,
+        addressStreet: student.address_street as string,
+        addressDistrict: student.address_district as string,
+        addressState: student.address_state as string,
+        addressPinCode: student.address_pin_code as string,
+        isProfileComplete: student.is_profile_complete as boolean
       };
 
     } catch (error) {
@@ -1244,44 +1244,44 @@ export const studentHelpers = {
 
       // Transform the data to match the expected interface
       return (data || []).map(schedule => ({
-        id: schedule.id,
-        routeId: schedule.route_id,
-        scheduleDate: new Date(schedule.schedule_date),
-        departureTime: schedule.departure_time,
-        arrivalTime: schedule.arrival_time,
-        availableSeats: schedule.available_seats,
-        bookedSeats: schedule.booked_seats,
-        status: schedule.status,
-        driverId: schedule.driver_id,
-        vehicleId: schedule.vehicle_id,
-        createdAt: new Date(schedule.created_at),
-        updatedAt: new Date(schedule.updated_at),
+        id: schedule.id as string,
+        routeId: schedule.route_id as string,
+        scheduleDate: new Date(schedule.schedule_date as string),
+        departureTime: schedule.departure_time as string,
+        arrivalTime: schedule.arrival_time as string,
+        availableSeats: schedule.available_seats as number,
+        bookedSeats: schedule.booked_seats as number,
+        status: schedule.status as string,
+        driverId: schedule.driver_id as string,
+        vehicleId: schedule.vehicle_id as string,
+        createdAt: new Date(schedule.created_at as string),
+        updatedAt: new Date(schedule.updated_at as string),
         route: schedule.route ? {
-          id: schedule.route.id,
-          routeNumber: schedule.route.route_number,
-          routeName: schedule.route.route_name,
-          startLocation: schedule.route.start_location,
-          endLocation: schedule.route.end_location,
-          distance: schedule.route.distance,
-          duration: schedule.route.duration,
-          fare: schedule.route.fare,
-          stops: schedule.route.stops ? schedule.route.stops.map((stop: any) => ({
-            id: stop.id,
-            stopName: stop.stop_name,
-            stopTime: stop.stop_time,
-            sequenceOrder: stop.sequence_order,
-            isMajorStop: stop.is_major_stop || false
-          })) : []
+          id: schedule.route.id as string,
+          routeNumber: schedule.route.route_number as string,
+          routeName: schedule.route.route_name as string,
+          startLocation: schedule.route.start_location as string,
+          endLocation: schedule.route.end_location as string,
+          distance: schedule.route.distance as number,
+          duration: schedule.route.duration as string,
+          fare: schedule.route.fare as number,
+          stops: (schedule.route.stops || []).map((stop: Record<string, unknown>) => ({
+            id: stop.id as string,
+            stopName: stop.stop_name as string,
+            stopTime: stop.stop_time as string,
+            sequenceOrder: stop.sequence_order as number,
+            isMajorStop: stop.is_major_stop as boolean || false
+          }))
         } : null,
         driver: schedule.driver ? {
-          name: schedule.driver.name,
-          rating: schedule.driver.rating || 0,
-          totalTrips: schedule.driver.total_trips || 0
+          name: schedule.driver.name as string,
+          rating: schedule.driver.rating as number || 0,
+          totalTrips: schedule.driver.total_trips as number || 0
         } : null,
         vehicle: schedule.vehicle ? {
-          registrationNumber: schedule.vehicle.registration_number,
-          model: schedule.vehicle.model,
-          capacity: schedule.vehicle.capacity
+          registrationNumber: schedule.vehicle.registration_number as string,
+          model: schedule.vehicle.model as string,
+          capacity: schedule.vehicle.capacity as number
         } : null
       }));
     } catch (error) {
@@ -1317,7 +1317,7 @@ export const studentHelpers = {
       .single();
 
     if (error) throw error;
-    return data;
+    return data as Booking;
   },
 
   // Submit grievance
@@ -1359,7 +1359,7 @@ export const studentHelpers = {
       }
 
       const data = await response.json();
-      return transformGrievance(data);
+      return transformGrievance(data as Record<string, unknown>);
     } catch (error) {
       console.error('Error submitting grievance:', error);
       throw new Error('Failed to create grievance');
@@ -1376,7 +1376,7 @@ export const studentHelpers = {
       .single();
 
     if (error) throw error;
-    return data;
+    return data as Student;
   },
 
   // Change password
@@ -1427,7 +1427,7 @@ export const studentHelpers = {
     const { data, error, count } = await query;
 
     if (error) throw error;
-    return { bookings: data?.map(transformBooking) || [], total: count || 0 };
+    return { bookings: (data || []).map(transformBooking) || [], total: count || 0 };
   },
 
   // Get student payments
@@ -1469,7 +1469,7 @@ export const studentHelpers = {
     const { data, error, count } = await query;
 
     if (error) throw error;
-    return { payments: data?.map(transformPayment) || [], total: count || 0 };
+    return { payments: (data || []).map(transformPayment) || [], total: count || 0 };
   },
 
   // Get student grievances
@@ -1495,8 +1495,8 @@ export const studentHelpers = {
       }
 
       const responseData = await response.json();
-      const grievances = responseData.data || [];
-      return grievances.map(transformGrievance);
+      const grievances = (responseData.data || []).map((grievance: Record<string, unknown>) => transformGrievance(grievance));
+      return grievances;
     } catch (error) {
       console.error('Error fetching grievances:', error);
       throw error;

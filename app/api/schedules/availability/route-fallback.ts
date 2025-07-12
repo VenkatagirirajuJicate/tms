@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     const hasNewColumns = columnCheck && columnCheck.length > 0;
 
     // Build query based on available columns
-    let query = supabase
+    const query = supabase
       .from('schedules')
       .select(`
         id,
@@ -129,13 +129,13 @@ export async function GET(request: NextRequest) {
         bookingWindowMap = new Map(
           bookingWindowChecks.map(check => [check.scheduleId, check.isOpen])
         );
-      } catch (error) {
-        console.error('Booking window function not available, using fallback');
-        // Fallback: all schedules are available
-        activeSchedules.forEach((schedule: any) => {
-          bookingWindowMap.set(schedule.id, true);
-        });
-      }
+              } catch (windowError) {
+          console.error('Booking window function not available, using fallback:', windowError);
+          // Fallback: all schedules are available
+          activeSchedules.forEach((schedule: any) => {
+            bookingWindowMap.set(schedule.id, true);
+          });
+        }
     } else {
       // Fallback: simple time-based check
       activeSchedules.forEach((schedule: any) => {

@@ -205,7 +205,7 @@ export function getNotificationIcon(type: string): string {
 }
 
 // URL utilities
-export function buildQueryString(params: Record<string, any>): string {
+export function buildQueryString(params: Record<string, string | number | boolean | null | undefined>): string {
   const searchParams = new URLSearchParams();
   
   Object.entries(params).forEach(([key, value]) => {
@@ -219,7 +219,7 @@ export function buildQueryString(params: Record<string, any>): string {
 }
 
 // Local storage utilities
-export function getFromStorage(key: string, defaultValue: any = null): any {
+export function getFromStorage(key: string, defaultValue: unknown = null): unknown {
   if (typeof window === 'undefined') return defaultValue;
   
   try {
@@ -231,7 +231,7 @@ export function getFromStorage(key: string, defaultValue: any = null): any {
   }
 }
 
-export function setToStorage(key: string, value: any): void {
+export function setToStorage(key: string, value: unknown): void {
   if (typeof window === 'undefined') return;
   
   try {
@@ -252,11 +252,17 @@ export function removeFromStorage(key: string): void {
 }
 
 // Error handling utilities
-export function getErrorMessage(error: any): string {
+export function getErrorMessage(error: unknown): string {
   if (typeof error === 'string') return error;
-  if (error?.message) return error.message;
-  if (error?.error_description) return error.error_description;
-  if (error?.details) return error.details;
+  if (error && typeof error === 'object' && 'message' in error) {
+    return (error as { message: string }).message;
+  }
+  if (error && typeof error === 'object' && 'error_description' in error) {
+    return (error as { error_description: string }).error_description;
+  }
+  if (error && typeof error === 'object' && 'details' in error) {
+    return (error as { details: string }).details;
+  }
   return 'An unexpected error occurred';
 }
 
@@ -272,7 +278,7 @@ export function formatFileSize(bytes: number): string {
 }
 
 // Debounce utility
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {

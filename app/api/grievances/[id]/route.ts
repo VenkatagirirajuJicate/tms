@@ -19,9 +19,10 @@ const getServiceClient = () => {
 };
 
 // GET endpoint to retrieve grievance details with activity timeline for passengers
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const grievanceId = params.id;
+    const resolvedParams = await params;
+    const grievanceId = resolvedParams.id;
 
     if (!grievanceId) {
       return NextResponse.json(
@@ -170,7 +171,25 @@ function calculateProgressPercentage(status: string): number {
 }
 
 // Helper function to build progress timeline
-function buildProgressTimeline(grievance: any, activities: any[]) {
+function buildProgressTimeline(grievance: {
+  created_at: string;
+  subject: string;
+  status: string;
+  resolution?: string;
+  resolved_at?: string;
+  updated_at: string;
+  admin_users?: { name: string }[];
+  assigned_to?: string;
+}, activities: {
+  id: string;
+  activity_type: string;
+  created_at: string;
+  actor_name: string;
+  actor_type: string;
+  action_description: string;
+  action_details?: Record<string, unknown>;
+  is_milestone?: boolean;
+}[]) {
   const timeline = [];
 
   // Step 1: Submitted
@@ -282,7 +301,7 @@ function buildProgressTimeline(grievance: any, activities: any[]) {
         title: 'ADMIN WORKING',
         status: 'current',
         description: 'Admin is currently working on your grievance',
-        actor: grievance.admin_users?.name || 'Admin',
+        actor: grievance.admin_users?.[0]?.name || 'Admin',
         icon: 'settings'
       });
     } else if (grievance.assigned_to) {
@@ -291,7 +310,7 @@ function buildProgressTimeline(grievance: any, activities: any[]) {
         title: 'PENDING REVIEW',
         status: 'current',
         description: 'Waiting for admin to start working',
-        actor: grievance.admin_users?.name || 'Admin',
+        actor: grievance.admin_users?.[0]?.name || 'Admin',
         icon: 'clock'
       });
     } else {
@@ -335,9 +354,10 @@ function getUpdateIcon(activityType: string): string {
 }
 
 // POST endpoint to rate resolution or add feedback
-export async function POST(request: Request, { params }: { params: { id: string } }) {
+export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const grievanceId = params.id;
+    const resolvedParams = await params;
+    const grievanceId = resolvedParams.id;
     const body = await request.json();
     const { action, rating, feedback, student_id } = body;
 

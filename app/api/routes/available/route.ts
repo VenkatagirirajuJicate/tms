@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Create Supabase admin client
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
       current_passengers: route.current_passengers || 0,
       status: route.status,
       route_stops: route.route_stops
-        ? route.route_stops.sort((a: any, b: any) => a.sequence_order - b.sequence_order)
+        ? route.route_stops.sort((a: { sequence_order: number }, b: { sequence_order: number }) => a.sequence_order - b.sequence_order)
         : []
     }));
 
@@ -83,10 +83,11 @@ export async function GET(request: NextRequest) {
       count: formattedRoutes.length
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in available routes API:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
+      { error: errorMessage },
       { status: 500 }
     );
   }

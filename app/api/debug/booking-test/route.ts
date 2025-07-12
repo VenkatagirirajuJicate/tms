@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     console.log('🔍 BOOKING TEST: Direct booking test for student:', studentId);
 
     // 1. Check if student exists
-    const { data: student, error: studentError } = await supabase
+    const { data: student } = await supabase
       .from('students')
       .select('id, student_name, roll_number')
       .eq('id', studentId)
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     console.log('🔍 BOOKING TEST: Student exists:', !!student, student);
 
     // 2. Get ALL bookings for this student (any status)
-    const { data: allBookings, error: allBookingsError } = await supabase
+    const { data: allBookings } = await supabase
       .from('bookings')
       .select('*')
       .eq('student_id', studentId)
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     console.log('🔍 BOOKING TEST: All bookings:', allBookings?.length || 0, allBookings);
 
     // 3. Get confirmed bookings only
-    const { data: confirmedBookings, error: confirmedError } = await supabase
+    const { data: confirmedBookings } = await supabase
       .from('bookings')
       .select('*')
       .eq('student_id', studentId)
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
 
     // 4. Get schedules for the route
     const routeId = '72d9ca02-7131-40c5-a23d-21cdb3653bea';
-    const { data: schedules, error: schedulesError } = await supabase
+    const { data: schedules } = await supabase
       .from('schedules')
       .select('*')
       .eq('route_id', routeId)
@@ -49,18 +49,27 @@ export async function POST(request: NextRequest) {
     console.log('🔍 BOOKING TEST: Schedules for route:', schedules?.length || 0, schedules);
 
     // 5. Test the matching logic
-    const matchResults = [];
+    interface MatchResult {
+      bookingId: string;
+      scheduleId: string;
+      date: string;
+      matchType: string;
+      booking: Record<string, unknown>;
+      schedule: Record<string, unknown>;
+    }
+
+    const matchResults: MatchResult[] = [];
     if (confirmedBookings && schedules) {
-      confirmedBookings.forEach(booking => {
-        schedules.forEach(schedule => {
+      confirmedBookings.forEach((booking: Record<string, unknown>) => {
+        schedules.forEach((schedule: Record<string, unknown>) => {
           const idMatch = booking.schedule_id === schedule.id;
           const dateRouteMatch = booking.trip_date === schedule.schedule_date && booking.route_id === schedule.route_id;
           
           if (idMatch || dateRouteMatch) {
             matchResults.push({
-              bookingId: booking.id,
-              scheduleId: schedule.id,
-              date: schedule.schedule_date,
+              bookingId: booking.id as string,
+              scheduleId: schedule.id as string,
+              date: schedule.schedule_date as string,
               matchType: idMatch ? 'ID Match' : 'Date+Route Match',
               booking: booking,
               schedule: schedule

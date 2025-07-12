@@ -6,11 +6,7 @@ import {
   CreditCard, 
   Calendar, 
   AlertCircle, 
-  CheckCircle,
-  Clock,
-  MapPin,
   ArrowRight,
-  TrendingUp,
   Bell,
   User
 } from 'lucide-react';
@@ -41,11 +37,11 @@ export default function DashboardPage() {
 
         const data = await studentHelpers.getDashboardData(studentId);
         setDashboardData(data);
-      } catch (error: any) {
+      } catch (error) {
         console.error('Dashboard error:', error);
         toast.error('Failed to load dashboard data');
         // Redirect to login if authentication fails
-        if (error.message.includes('authenticated') || error.message.includes('expired')) {
+        if (error instanceof Error && (error.message.includes('authenticated') || error.message.includes('expired'))) {
           window.location.href = '/login';
         }
       } finally {

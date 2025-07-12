@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
 // Create a service role client that bypasses RLS
@@ -18,12 +18,12 @@ const getServiceClient = () => {
   });
 };
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const supabase = getServiceClient();
     
     // Test basic database connectivity
-    const { data: tables, error: tablesError } = await supabase
+    const { error: tablesError } = await supabase
       .from('grievances')
       .select('*', { count: 'exact', head: true });
     
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
       tests: {
         grievancesTable: {
           accessible: !tablesError,
-          error: tablesError?.message || null
+          error: tablesError ? (tablesError as Record<string, unknown>).message || 'Unknown error' : null
         },
         categoriesTable: {
           accessible: !categoriesError,

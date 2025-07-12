@@ -332,7 +332,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Can only rate resolved grievances' }, { status: 400 });
     }
     
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     
     if (satisfaction_rating !== undefined) {
       if (satisfaction_rating < 1 || satisfaction_rating > 5) {
@@ -376,6 +376,9 @@ export async function PUT(request: NextRequest) {
     
   } catch (error) {
     console.error('Error in PUT /api/grievances:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
   }
 } 

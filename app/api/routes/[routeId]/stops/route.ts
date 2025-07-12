@@ -3,10 +3,11 @@ import { createClient } from '@supabase/supabase-js';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { routeId: string } }
+  { params }: { params: Promise<{ routeId: string }> }
 ) {
   try {
-    const { routeId } = params;
+    const resolvedParams = await params;
+    const { routeId } = resolvedParams;
 
     if (!routeId) {
       return NextResponse.json(

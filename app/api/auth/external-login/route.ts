@@ -39,6 +39,14 @@ export async function POST(request: NextRequest) {
       .eq('email', email)
       .single();
 
+    if (existingError && existingError.code !== 'PGRST116') {
+      console.error('Error checking existing student:', existingError);
+      return NextResponse.json(
+        { error: 'Failed to verify student status' },
+        { status: 500 }
+      );
+    }
+
     if (existingStudent && existingStudent.first_login_completed) {
       return NextResponse.json(
         { error: 'Student already exists. Please use regular login.' },
@@ -69,7 +77,33 @@ export async function POST(request: NextRequest) {
     const students = data.data || data.students || [];
     
     // Find student by email or mobile
-    const foundStudent = students.find((student: any) => {
+    interface ExternalStudent {
+      student_email?: string;
+      college_email?: string;
+      student_mobile?: string;
+      father_mobile?: string;
+      mother_mobile?: string;
+      student_name?: string;
+      name?: string;
+      roll_number?: string;
+      student_id?: string;
+      id?: string;
+      department_name?: string;
+      institution_name?: string;
+      program_name?: string;
+      degree_name?: string;
+      father_name?: string;
+      mother_name?: string;
+      date_of_birth?: string;
+      gender?: string;
+      permanent_address_street?: string;
+      permanent_address_district?: string;
+      permanent_address_state?: string;
+      permanent_address_pin_code?: string;
+      is_profile_complete?: boolean;
+    }
+
+    const foundStudent = students.find((student: ExternalStudent) => {
       const emailMatch = student.student_email?.toLowerCase() === email.toLowerCase() ||
                          student.college_email?.toLowerCase() === email.toLowerCase();
       const mobileMatch = mobile && (
@@ -214,10 +248,11 @@ export async function POST(request: NextRequest) {
       message: 'External authentication successful. Please proceed to login.'
     });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('External authentication error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'External authentication failed';
     return NextResponse.json(
-      { error: error.message || 'External authentication failed' },
+      { error: errorMessage },
       { status: 500 }
     );
   }

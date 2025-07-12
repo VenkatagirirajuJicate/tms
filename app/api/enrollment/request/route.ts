@@ -69,6 +69,14 @@ export async function POST(request: NextRequest) {
       .eq('request_status', 'pending')
       .single();
 
+    if (requestError && requestError.code !== 'PGRST116') {
+      console.error('Error checking existing request:', requestError);
+      return NextResponse.json(
+        { error: 'Failed to check existing enrollment requests' },
+        { status: 500 }
+      );
+    }
+
     if (existingRequest) {
       return NextResponse.json(
         { error: 'You already have a pending enrollment request' },
@@ -247,10 +255,11 @@ export async function POST(request: NextRequest) {
       message: 'Enrollment request submitted successfully'
     });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error in enrollment request API:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
+      { error: errorMessage },
       { status: 500 }
     );
   }

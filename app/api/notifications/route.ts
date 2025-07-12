@@ -71,14 +71,33 @@ export async function GET(request: NextRequest) {
     }
 
     // Format notifications and check read status
-    const formattedNotifications = data?.map((notification: any) => ({
+    interface NotificationData {
+      id: string;
+      title: string;
+      message: string;
+      type: string;
+      category: string;
+      target_audience: string;
+      specific_users: string[];
+      is_active: boolean;
+      read_by?: string[];
+      created_at: string;
+      updated_at: string;
+      [key: string]: unknown;
+    }
+
+    const formattedNotifications = data?.map((notification: NotificationData) => ({
       ...notification,
       read: notification.read_by?.includes(userId) || false
     })) || [];
 
     // Filter unread if requested
+    interface FormattedNotification extends NotificationData {
+      read: boolean;
+    }
+
     const filteredNotifications = unreadOnly 
-      ? formattedNotifications.filter((n: any) => !n.read)
+      ? formattedNotifications.filter((n: FormattedNotification) => !n.read)
       : formattedNotifications;
 
     return NextResponse.json({

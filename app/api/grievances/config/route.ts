@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
 const getServiceClient = () => {
@@ -17,10 +17,11 @@ const getServiceClient = () => {
   });
 };
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const supabase = getServiceClient();
     
+    // Get the grievance categories configuration
     const { data: categoriesConfig, error: configError } = await supabase
       .from('grievance_categories_config')
       .select('*')
@@ -31,6 +32,9 @@ export async function GET(request: NextRequest) {
       console.error('Error fetching categories config:', configError);
       return NextResponse.json({ error: 'Failed to fetch configuration' }, { status: 500 });
     }
+
+    // Log the fetched categories config for debugging
+    console.log('Fetched grievance categories config:', categoriesConfig?.length || 0, 'items');
 
     const config = {
       categories: {

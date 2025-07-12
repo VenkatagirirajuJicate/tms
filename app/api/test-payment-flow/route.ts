@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
-    const { paymentMethod = 'upi' } = await request.json();
-    
     console.log('Demo payment flow test');
     
     // Simulate demo payment processing
@@ -59,11 +57,12 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error in test payment flow:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json({ 
       error: 'Internal server error',
-      details: error.message 
+      details: errorMessage 
     }, { status: 500 });
   }
 }

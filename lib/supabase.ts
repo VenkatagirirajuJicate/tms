@@ -15,7 +15,12 @@ function getSupabaseClient() {
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
     if (!supabaseUrl || !supabaseAnonKey) {
-      throw new Error(`Missing Supabase environment variables. URL: ${!!supabaseUrl}, Key: ${!!supabaseAnonKey}`);
+      // During build time or when env vars are missing, provide a more helpful error
+      const missingVars = [];
+      if (!supabaseUrl) missingVars.push('NEXT_PUBLIC_SUPABASE_URL');
+      if (!supabaseAnonKey) missingVars.push('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+      
+      throw new Error(`Missing Supabase environment variables: ${missingVars.join(', ')}. Please add them to your .env.local file.`);
     }
 
     _supabase = createSupabaseClient<Database>(supabaseUrl, supabaseAnonKey, {

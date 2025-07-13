@@ -252,8 +252,8 @@ export const studentHelpers = {
         .single();
 
       // Debug: Log basic profile info
-      console.log('🔍 NEW LOGIC - Checking enrollment for student:', profile?.student_name);
-      console.log('🔍 NEW LOGIC - allocated_route_id from profile:', profile?.allocated_route_id);
+      console.log('🚨🚨🚨 NEW LOGIC RUNNING - Checking enrollment for student:', profile?.student_name);
+      console.log('🚨🚨🚨 NEW LOGIC - allocated_route_id from profile:', profile?.allocated_route_id);
       console.log('🔍 Profile data:', {
         allocated_route_id: profile?.allocated_route_id,
         transport_status: profile?.transport_status,

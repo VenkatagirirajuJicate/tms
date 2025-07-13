@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase';
 
-const supabase = createClient();
-
 // PUT - Mark notification as read
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const supabase = createClient();
+    const resolvedParams = await params;
+    const { id } = resolvedParams;
     const body = await request.json();
     const { userId } = body;
 

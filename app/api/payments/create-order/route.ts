@@ -247,11 +247,11 @@ export async function POST(request: NextRequest) {
       paymentId: newPayment.id
     }, { status: 200 });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error in create payment order:', error);
     return NextResponse.json({ 
       error: 'Internal server error',
-      details: error.message 
+      details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });
   }
 } 

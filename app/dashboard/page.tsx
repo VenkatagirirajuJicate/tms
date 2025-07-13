@@ -6,11 +6,7 @@ import {
   CreditCard, 
   Calendar, 
   AlertCircle, 
-  CheckCircle,
-  Clock,
-  MapPin,
   ArrowRight,
-  TrendingUp,
   Bell,
   User
 } from 'lucide-react';
@@ -41,11 +37,11 @@ export default function DashboardPage() {
 
         const data = await studentHelpers.getDashboardData(studentId);
         setDashboardData(data);
-      } catch (error: any) {
+      } catch (error) {
         console.error('Dashboard error:', error);
         toast.error('Failed to load dashboard data');
         // Redirect to login if authentication fails
-        if (error.message.includes('authenticated') || error.message.includes('expired')) {
+        if (error instanceof Error && (error.message.includes('authenticated') || error.message.includes('expired'))) {
           window.location.href = '/login';
         }
       } finally {
@@ -82,6 +78,14 @@ export default function DashboardPage() {
   }
 
   const { profile, upcomingBookings, recentPayments, notifications, transportStatus, quickStats } = dashboardData;
+
+  // Debug: Check if student has route allocation
+  const hasRouteAllocation = transportStatus.hasActiveRoute || (profile as any)?.allocated_route_id;
+  console.log('🚀 DASHBOARD OVERRIDE CHECK:');
+  console.log('   - transportStatus.hasActiveRoute:', transportStatus.hasActiveRoute);
+  console.log('   - profile.allocated_route_id:', (profile as any)?.allocated_route_id);
+  console.log('   - Final hasRouteAllocation:', hasRouteAllocation);
+  console.log('   - Will show enrollment:', !hasRouteAllocation);
 
   // Quick stats cards
   const statsCards = [
@@ -160,7 +164,8 @@ export default function DashboardPage() {
       </div>
 
       {/* Transport Status or Enrollment */}
-      {transportStatus.hasActiveRoute ? (
+      {/* OVERRIDE: If student has allocated_route_id, hide enrollment */}
+      {hasRouteAllocation ? (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">My Transport Route</h2>

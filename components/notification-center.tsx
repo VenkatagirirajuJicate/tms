@@ -34,8 +34,16 @@ interface Notification {
   enable_email_notification: boolean;
   enable_sms_notification: boolean;
   actionable: boolean;
-  primary_action?: any;
-  secondary_action?: any;
+  primary_action?: {
+    text: string;
+    url: string;
+    type?: string;
+  };
+  secondary_action?: {
+    text: string;
+    url: string;
+    type?: string;
+  };
   tags?: string[];
   read_by?: string[];
   created_by?: string;

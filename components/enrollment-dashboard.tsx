@@ -1,18 +1,15 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import {
   Bus,
   MapPin,
   Clock,
   Users,
-  RouteIcon,
   CheckCircle,
   XCircle,
   AlertCircle,
-  Loader2,
-  Calendar
+  Loader2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { sessionManager } from '@/lib/session';
@@ -161,9 +158,9 @@ export default function EnrollmentDashboard({ student }: EnrollmentDashboardProp
       } else {
         throw new Error(data.error || 'Failed to submit enrollment request');
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error submitting enrollment:', error);
-      toast.error(error.message || 'Failed to submit enrollment request');
+      toast.error(error instanceof Error ? error.message : 'Failed to submit enrollment request');
     } finally {
       setSubmitting(false);
     }

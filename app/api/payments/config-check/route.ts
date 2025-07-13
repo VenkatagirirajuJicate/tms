@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const keyId = process.env.RAZORPAY_KEY_ID;
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
@@ -59,11 +59,12 @@ export async function GET(request: NextRequest) {
       setupGuide: 'See QUICK_RAZORPAY_SETUP.md for detailed instructions'
     }, { status: 200 });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error checking Razorpay config:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json({ 
       status: 'error',
-      error: error.message,
+      error: errorMessage,
       setupGuide: 'See QUICK_RAZORPAY_SETUP.md for setup instructions'
     }, { status: 500 });
   }

@@ -60,20 +60,22 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ status: 'success' }, { status: 200 });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Webhook processing error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json({ 
       error: 'Webhook processing failed',
-      details: error.message 
+      details: errorMessage 
     }, { status: 500 });
   }
 }
 
-async function handlePaymentCaptured(paymentData: any) {
+async function handlePaymentCaptured(paymentData: { id: string; order_id: string; amount: number; status: string }) {
   try {
     console.log('Processing payment.captured webhook:', paymentData);
 
     const { id: razorpay_payment_id, order_id: razorpay_order_id, amount, status } = paymentData;
+    console.log('Payment details:', { razorpay_payment_id, razorpay_order_id, amount, status });
 
     // Find the payment record in our database
     const { data: paymentRecord, error: findError } = await supabase
@@ -114,7 +116,7 @@ async function handlePaymentCaptured(paymentData: any) {
   }
 }
 
-async function handlePaymentFailed(paymentData: any) {
+async function handlePaymentFailed(paymentData: { order_id: string; error_code: string; error_description: string }) {
   try {
     console.log('Processing payment.failed webhook:', paymentData);
 
@@ -155,7 +157,7 @@ async function handlePaymentFailed(paymentData: any) {
   }
 }
 
-async function handleOrderPaid(orderData: any, paymentData: any) {
+async function handleOrderPaid(orderData: unknown, paymentData: { id: string; order_id: string; amount: number; status: string }) {
   try {
     console.log('Processing order.paid webhook:', orderData, paymentData);
     

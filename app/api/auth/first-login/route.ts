@@ -97,10 +97,11 @@ export async function POST(request: NextRequest) {
       }
     });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('First-time login error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'First time login failed';
     return NextResponse.json(
-      { error: error.message || 'First time login failed' },
+      { error: errorMessage },
       { status: 500 }
     );
   }

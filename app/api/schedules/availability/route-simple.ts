@@ -12,6 +12,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Route ID is required' }, { status: 400 });
     }
 
+    // Log the date parameters for debugging
+    console.log('Simple schedule API called with:', { routeId, startDate, endDate });
+
     // Return mock data for now to test the frontend
     const mockSchedules = [
       {
@@ -53,7 +56,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     return NextResponse.json({
       is_booking_enabled: true,

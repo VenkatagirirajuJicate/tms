@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { sessionManager } from '@/lib/session';
 
 // Create a service role client that bypasses RLS
 const getServiceClient = () => {
@@ -21,16 +22,19 @@ const getServiceClient = () => {
 // GET - Get comments for a grievance
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const resolvedParams = await params;
+    const { id } = resolvedParams;
     
     // Get current student from session
     const session = sessionManager.getSession();
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    
+    const supabase = getServiceClient();
     
     // Get student data
     const { data: student, error: studentError } = await supabase
@@ -103,10 +107,11 @@ export async function GET(
 // POST - Add a comment/communication to grievance
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const grievanceId = params.id;
+    const resolvedParams = await params;
+    const grievanceId = resolvedParams.id;
     const body = await request.json();
     
     // Get current student from request headers
@@ -192,10 +197,11 @@ export async function POST(
 // PATCH - Mark comment as read
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const resolvedParams = await params;
+    const { id } = resolvedParams;
     const body = await request.json();
     const { communication_id } = body;
     

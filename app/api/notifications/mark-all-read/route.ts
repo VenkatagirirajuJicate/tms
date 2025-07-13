@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase';
 
-const supabase = createClient();
-
 // PUT - Mark all notifications as read for a user
 export async function PUT(request: NextRequest) {
   try {
+    const supabase = createClient();
     const body = await request.json();
     const { userId } = body;
 
@@ -27,7 +26,12 @@ export async function PUT(request: NextRequest) {
     }
 
     // Filter unread notifications
-    const unreadNotifications = notifications?.filter((notification: any) => 
+    interface NotificationItem {
+      id: string;
+      read_by?: string[];
+    }
+
+    const unreadNotifications = notifications?.filter((notification: NotificationItem) => 
       !notification.read_by?.includes(userId)
     ) || [];
 
@@ -40,7 +44,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Update all unread notifications
-    const updatePromises = unreadNotifications.map((notification: any) => {
+    const updatePromises = unreadNotifications.map((notification: NotificationItem) => {
       const currentReadBy = notification.read_by || [];
       return supabase
         .from('notifications')

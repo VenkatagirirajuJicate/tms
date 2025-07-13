@@ -19,9 +19,10 @@ const getServiceClient = () => {
 };
 
 // GET endpoint to retrieve grievance activities for progress tracking
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const grievanceId = params.id;
+    const resolvedParams = await params;
+    const grievanceId = resolvedParams.id;
 
     if (!grievanceId) {
       return NextResponse.json(
@@ -150,7 +151,7 @@ function getTimeAgo(timestamp: string): string {
 
 // Helper function to categorize activities
 function categorizeActivity(activityType: string): string {
-  const categories = {
+  const categories: Record<string, string> = {
     'grievance_created': 'submission',
     'grievance_assigned': 'assignment',
     'grievance_reassigned': 'assignment',
@@ -169,7 +170,7 @@ function categorizeActivity(activityType: string): string {
 
 // Helper function to get display title
 function getDisplayTitle(activityType: string): string {
-  const titles = {
+  const titles: Record<string, string> = {
     'grievance_created': 'GRIEVANCE SUBMITTED',
     'grievance_assigned': 'ASSIGNED TO ADMIN',
     'grievance_reassigned': 'REASSIGNED TO ADMIN',
@@ -188,7 +189,7 @@ function getDisplayTitle(activityType: string): string {
 
 // Helper function to get display icon
 function getDisplayIcon(activityType: string): string {
-  const icons = {
+  const icons: Record<string, string> = {
     'grievance_created': 'file-text',
     'grievance_assigned': 'user-check',
     'grievance_reassigned': 'user-check',
@@ -216,7 +217,7 @@ function getDisplayColor(activityType: string, actorType: string): string {
   }
 
   // Fallback based on activity type
-  const colors = {
+  const colors: Record<string, string> = {
     'grievance_created': 'green',
     'grievance_assigned': 'blue',
     'grievance_reassigned': 'blue',

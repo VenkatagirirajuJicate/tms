@@ -75,6 +75,14 @@ export async function GET(request: NextRequest) {
       .limit(1)
       .single();
 
+    if (requestError && requestError.code !== 'PGRST116') {
+      console.error('Error fetching enrollment request:', requestError);
+      return NextResponse.json(
+        { error: 'Failed to fetch enrollment request' },
+        { status: 500 }
+      );
+    }
+
     // Get current route allocation if enrolled
     let routeAllocation = null;
     if (student.transport_enrolled) {
@@ -108,7 +116,14 @@ export async function GET(request: NextRequest) {
     }
 
     // Get enrollment activities for tracking
-    let activities = [];
+    let activities: {
+      id: string;
+      activity_type: string;
+      activity_description: string;
+      metadata?: any;
+      created_at: string;
+      admin_users?: { name: string; email: string }[];
+    }[] = [];
     if (enrollmentRequest) {
       const { data: activitiesData, error: activitiesError } = await supabaseAdmin
         .from('transport_enrollment_activities')
@@ -158,10 +173,11 @@ export async function GET(request: NextRequest) {
       activities: activities
     });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error in enrollment status API:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
+      { error: errorMessage },
       { status: 500 }
     );
   }

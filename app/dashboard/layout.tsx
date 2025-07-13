@@ -14,8 +14,7 @@ import {
   Menu, 
   X,
   Bus,
-  MapPin,
-  Settings
+  MapPin
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { sessionManager } from '@/lib/session';

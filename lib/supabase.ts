@@ -253,6 +253,15 @@ export const studentHelpers = {
 
       // Debug: Log basic profile info
       console.log('🔍 Checking enrollment for student:', profile?.student_name);
+      console.log('🔍 Profile data:', {
+        allocated_route_id: profile?.allocated_route_id,
+        transport_status: profile?.transport_status,
+        transport_enrolled: profile?.transport_enrolled,
+        transportProfile: profile?.transportProfile ? {
+          allocated_route_id: profile.transportProfile.allocated_route_id,
+          transport_status: profile.transportProfile.transport_status
+        } : null
+      });
 
       if (profileError || !profile) {
         throw new Error('Student profile not found');
@@ -336,94 +345,80 @@ export const studentHelpers = {
         lastTripDate: undefined
       };
 
-      // Check if student has active transport enrollment and route allocation
-      // First check if the student has an allocated route directly in the profile
-      const hasAllocatedRoute = profile.allocated_route_id;
-      const hasActiveTransportStatus = profile.transport_status === 'active';
-      
-      // Also check transportProfile if it exists
+      // SIMPLIFIED LOGIC: Only show enrollment if student has NO route allocated
+      // Check all possible sources for route allocation
       const transportProfile = profile.transportProfile || profile.transport_profile;
-      const hasTransportProfileRoute = transportProfile?.allocatedRouteId || transportProfile?.allocated_route_id;
-      const hasActiveTransportProfile = transportProfile?.transportStatus === 'active' || transportProfile?.transport_status === 'active';
       
-      let isEnrolledAndAllocated = (hasAllocatedRoute && hasActiveTransportStatus) || 
-                                   (hasTransportProfileRoute && hasActiveTransportProfile);
+      // Check for route allocation in any of the sources
+      const routeFromProfile = profile.allocated_route_id;
+      const routeFromTransportProfile = transportProfile?.allocated_route_id;
       
-      // Fallback: If student has confirmed bookings, they must have a route allocation
-      let routeFromBookings = null;
-      if (!isEnrolledAndAllocated && upcomingBookings.length > 0) {
-        const confirmedBooking = upcomingBookings.find(b => b.status === 'confirmed');
-        if (confirmedBooking && confirmedBooking.route) {
-          routeFromBookings = confirmedBooking.route;
-          isEnrolledAndAllocated = true;
-          console.log('🔍 Student has confirmed bookings, inferring route allocation from bookings');
+      // Check for active route allocation in the new table
+      let routeFromAllocations = null;
+      try {
+        const { data: activeAllocation, error: allocationError } = await supabase
+          .from('student_route_allocations')
+          .select('route_id, routes(*)')
+          .eq('student_id', profile.id)
+          .eq('is_active', true)
+          .single();
+          
+        if (!allocationError && activeAllocation) {
+          routeFromAllocations = activeAllocation.route_id;
         }
+      } catch (error) {
+        console.warn('Error checking route allocations:', error);
       }
       
-      if (isEnrolledAndAllocated) {
-        console.log('🔍 Student has transport enrollment, fetching route details...');
+      // Determine the route ID to use
+      const allocatedRouteId = routeFromProfile || routeFromTransportProfile || routeFromAllocations;
+      
+      console.log('🔍 Route allocation check:');
+      console.log('   - routeFromProfile:', routeFromProfile);
+      console.log('   - routeFromTransportProfile:', routeFromTransportProfile);
+      console.log('   - routeFromAllocations:', routeFromAllocations);
+      console.log('   - allocatedRouteId:', allocatedRouteId);
+      
+      // If student has any route allocation, show route info instead of enrollment
+      if (allocatedRouteId) {
+        console.log('✅ Student has route allocation, fetching route details...');
         
-        // Determine the route ID to use
-        const routeId = hasAllocatedRoute || hasTransportProfileRoute;
-        
-        if (routeFromBookings) {
-          // Use route data from bookings
-          transportStatus.hasActiveRoute = true;
-          transportStatus.routeInfo = {
-            id: routeFromBookings.id as string,
-            route_number: routeFromBookings.route_number as string,
-            route_name: routeFromBookings.route_name as string,
-            start_location: routeFromBookings.start_location as string,
-            end_location: routeFromBookings.end_location as string,
-            departure_time: routeFromBookings.departure_time as string,
-            arrival_time: routeFromBookings.arrival_time as string,
-            fare: routeFromBookings.fare as number,
-            status: routeFromBookings.status as string,
-            boarding_point: profile.boarding_point as string
-          };
-          
-          console.log('✅ Active route found from bookings:', routeFromBookings.route_number, '-', routeFromBookings.route_name);
-        } else {
-          // Fetch route data from database
-          try {
-            const { data: routeData, error: routeError } = await supabase
-              .from('routes')
-              .select('*')
-              .eq('id', routeId)
-              .single();
+        try {
+          const { data: routeData, error: routeError } = await supabase
+            .from('routes')
+            .select('*')
+            .eq('id', allocatedRouteId)
+            .single();
 
-            if (!routeError && routeData) {
-              transportStatus.hasActiveRoute = true;
-              transportStatus.routeInfo = {
-                id: routeData.id as string,
-                route_number: routeData.route_number as string,
-                route_name: routeData.route_name as string,
-                start_location: routeData.start_location as string,
-                end_location: routeData.end_location as string,
-                departure_time: routeData.departure_time as string,
-                arrival_time: routeData.arrival_time as string,
-                fare: routeData.fare as number,
-                status: routeData.status as string,
-                boarding_point: profile.boarding_point as string
-              };
-              
-              console.log('✅ Active route found:', routeData.route_number, '-', routeData.route_name);
-            } else {
-              console.warn('Route not found for route_id:', routeId);
-            }
-          } catch (error) {
-            console.warn('Error fetching route details:', error);
+          if (!routeError && routeData) {
+            transportStatus.hasActiveRoute = true;
+            transportStatus.routeInfo = {
+              id: routeData.id as string,
+              route_number: routeData.route_number as string,
+              route_name: routeData.route_name as string,
+              start_location: routeData.start_location as string,
+              end_location: routeData.end_location as string,
+              departure_time: routeData.departure_time as string,
+              arrival_time: routeData.arrival_time as string,
+              fare: routeData.fare as number,
+              status: routeData.status as string,
+              boarding_point: profile.boarding_point as string
+            };
+            
+            console.log('✅ Route found:', routeData.route_number, '-', routeData.route_name);
+          } else {
+            console.warn('❌ Route not found for route_id:', allocatedRouteId);
           }
+        } catch (error) {
+          console.warn('❌ Error fetching route details:', error);
         }
       } else {
-        console.log('📋 Student not enrolled in transport or no route allocated');
-        console.log('   - allocated_route_id:', hasAllocatedRoute);
-        console.log('   - transport_status:', profile.transport_status);
-        console.log('   - transportProfile.allocatedRouteId:', transportProfile?.allocatedRouteId);
-        console.log('   - transportProfile.transportStatus:', transportProfile?.transportStatus);
-        console.log('   - enrollment_status:', profile.enrollment_status);
-        console.log('   - upcomingBookings.length:', upcomingBookings.length);
+        console.log('📋 No route allocation found - will show enrollment option');
       }
+      
+      // Debug: Log final transport status
+      console.log('🔍 Final transportStatus.hasActiveRoute:', transportStatus.hasActiveRoute);
+      console.log('🔍 Final transportStatus.routeInfo:', transportStatus.routeInfo);
 
       // Transform profile to match expected interface
       // @ts-ignore - Temporary bypass for type issues

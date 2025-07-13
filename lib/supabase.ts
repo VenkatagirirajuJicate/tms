@@ -252,7 +252,8 @@ export const studentHelpers = {
         .single();
 
       // Debug: Log basic profile info
-      console.log('🔍 Checking enrollment for student:', profile?.student_name);
+      console.log('🔍 NEW LOGIC - Checking enrollment for student:', profile?.student_name);
+      console.log('🔍 NEW LOGIC - allocated_route_id from profile:', profile?.allocated_route_id);
       console.log('🔍 Profile data:', {
         allocated_route_id: profile?.allocated_route_id,
         transport_status: profile?.transport_status,
@@ -381,7 +382,10 @@ export const studentHelpers = {
       
       // If student has any route allocation, show route info instead of enrollment
       if (allocatedRouteId) {
-        console.log('✅ Student has route allocation, fetching route details...');
+        console.log('✅ Student has route allocation - HIDING ENROLLMENT');
+        
+        // IMPORTANT: Set hasActiveRoute to true immediately when route allocation is found
+        transportStatus.hasActiveRoute = true;
         
         try {
           const { data: routeData, error: routeError } = await supabase
@@ -391,7 +395,6 @@ export const studentHelpers = {
             .single();
 
           if (!routeError && routeData) {
-            transportStatus.hasActiveRoute = true;
             transportStatus.routeInfo = {
               id: routeData.id as string,
               route_number: routeData.route_number as string,
@@ -405,15 +408,30 @@ export const studentHelpers = {
               boarding_point: profile.boarding_point as string
             };
             
-            console.log('✅ Route found:', routeData.route_number, '-', routeData.route_name);
+            console.log('✅ Route details loaded:', routeData.route_number, '-', routeData.route_name);
           } else {
-            console.warn('❌ Route not found for route_id:', allocatedRouteId);
+            console.warn('❌ Route not found, but will still hide enrollment since allocation exists');
+            // Still keep hasActiveRoute = true to hide enrollment
+            transportStatus.routeInfo = {
+              id: allocatedRouteId,
+              route_number: 'Unknown Route',
+              route_name: 'Route details unavailable',
+              start_location: 'Unknown',
+              end_location: 'Unknown', 
+              departure_time: 'Unknown',
+              arrival_time: 'Unknown',
+              fare: 0,
+              status: 'unknown',
+              boarding_point: profile.boarding_point as string
+            };
           }
         } catch (error) {
-          console.warn('❌ Error fetching route details:', error);
+          console.warn('❌ Error fetching route details, but will still hide enrollment:', error);
+          // Still keep hasActiveRoute = true to hide enrollment
         }
       } else {
-        console.log('📋 No route allocation found - will show enrollment option');
+        console.log('📋 No route allocation found - SHOWING ENROLLMENT');
+        transportStatus.hasActiveRoute = false;
       }
       
       // Debug: Log final transport status

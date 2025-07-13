@@ -239,10 +239,15 @@ export const studentHelpers = {
   // Get student dashboard data
   async getDashboardData(studentId: string): Promise<StudentDashboardData> {
     try {
-      // Get basic student profile first
+      // Get basic student profile with transport profile
       const { data: profile, error: profileError } = await supabase
         .from('students')
-        .select('*')
+        .select(`
+          *,
+          transportProfile:student_transport_profiles(*),
+          department:departments(*),
+          program:programs(*)
+        `)
         .eq('id', studentId)
         .single();
 
@@ -328,16 +333,31 @@ export const studentHelpers = {
         lastTripDate: undefined
       };
 
-      // Check if student has active transport enrollment
-      if (profile.transport_enrolled && profile.allocated_route_id) {
+      // Check if student has active transport enrollment and route allocation
+      // First check if the student has an allocated route directly in the profile
+      const hasAllocatedRoute = profile.allocated_route_id;
+      const hasActiveTransportStatus = profile.transport_status === 'active';
+      
+      // Also check transportProfile if it exists
+      const transportProfile = profile.transportProfile || profile.transport_profile;
+      const hasTransportProfileRoute = transportProfile?.allocatedRouteId || transportProfile?.allocated_route_id;
+      const hasActiveTransportProfile = transportProfile?.transportStatus === 'active' || transportProfile?.transport_status === 'active';
+      
+      const isEnrolledAndAllocated = (hasAllocatedRoute && hasActiveTransportStatus) || 
+                                   (hasTransportProfileRoute && hasActiveTransportProfile);
+      
+      if (isEnrolledAndAllocated) {
         console.log('🔍 Student has transport enrollment, fetching route details...');
+        
+        // Determine the route ID to use
+        const routeId = hasAllocatedRoute || hasTransportProfileRoute;
         
         try {
           // Get the allocated route details
           const { data: routeData, error: routeError } = await supabase
             .from('routes')
             .select('*')
-            .eq('id', profile.allocated_route_id)
+            .eq('id', routeId)
             .single();
 
           if (!routeError && routeData) {
@@ -357,16 +377,17 @@ export const studentHelpers = {
             
             console.log('✅ Active route found:', routeData.route_number, '-', routeData.route_name);
           } else {
-            console.warn('Route not found for allocated_route_id:', profile.allocated_route_id);
+            console.warn('Route not found for route_id:', routeId);
           }
         } catch (error) {
           console.warn('Error fetching route details:', error);
         }
       } else {
         console.log('📋 Student not enrolled in transport or no route allocated');
-        console.log('   - transport_enrolled:', profile.transport_enrolled);
-        console.log('   - allocated_route_id:', profile.allocated_route_id);
+        console.log('   - allocated_route_id:', hasAllocatedRoute);
         console.log('   - transport_status:', profile.transport_status);
+        console.log('   - transportProfile.allocatedRouteId:', transportProfile?.allocatedRouteId);
+        console.log('   - transportProfile.transportStatus:', transportProfile?.transportStatus);
         console.log('   - enrollment_status:', profile.enrollment_status);
       }
 

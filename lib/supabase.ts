@@ -238,6 +238,7 @@ export const studentHelpers = {
 
   // Get student dashboard data
   async getDashboardData(studentId: string): Promise<StudentDashboardData> {
+    console.log('🔥🔥🔥 UPDATED getDashboardData FUNCTION CALLED for studentId:', studentId);
     try {
       // Get basic student profile with transport profile
       const { data: profile, error: profileError } = await supabase
